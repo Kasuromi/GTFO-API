@@ -1,0 +1,38 @@
+﻿<Project InitialTargets="ValidateGamePath">
+  <Import Project="$(MSBuildThisFileDirectory)\GameFolder.props" Condition="Exists('$(MSBuildThisFileDirectory)\GameFolder.props')" />
+  
+  <Target Name="ValidateGamePath">
+    <Error Text="The GameFolder property must be set to the GTFO game folder." Condition="'$(GameFolder)' == '' or !Exists('$(GameFolder)')" />
+  </Target>
+
+  <PropertyGroup>
+    <BIELibsFolder>$(GameFolder)\BepInEx\core</BIELibsFolder>
+    <MonoLibsFolder>$(GameFolder)\mono\Managed</MonoLibsFolder>
+    <UnhollowedLibsFolder>$(GameFolder)\BepInEx\unhollowed</UnhollowedLibsFolder>
+    <PluginsFolder>$(GameFolder)\BepInEx\plugins</PluginsFolder>
+  </PropertyGroup>
+
+  <!-- NuGet Packages -->
+  <ItemGroup>
+    <PackageReference Include="VersionInfoGenerator" Version="2.0.0" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <!-- Assemblies -->
+  <ItemGroup>
+    <!-- BepInEx -->
+    <Reference Include="$(BIELibsFolder)\BepInEx.*.dll" Private="false" />
+    <Reference Include="$(BIELibsFolder)\0Harmony.dll" Private="false" />
+    <Reference Include="$(BIELibsFolder)\UnhollowerBaseLib.dll" Private="false" />
+    <Reference Include="$(BIELibsFolder)\UnhollowerRuntimeLib.dll" Private="false" />
+
+    <!-- Mono -->
+    <Reference Include="$(MonoLibsFolder)\Microsoft.Bcl.AsyncInterfaces.dll" Private="false" />
+    <Reference Include="$(MonoLibsFolder)\System.Text.Json.dll" Private="false" />
+    <Reference Include="$(MonoLibsFolder)\System.Runtime.CompilerServices.Unsafe.dll" Private="false" />
+
+    <!-- Unhollowed -->
+    <Reference Include="$(UnhollowedLibsFolder)/*.dll" Private="false" />
+    <Reference Remove="$(UnhollowedLibsFolder)/netstandard.dll" />
+    <Reference Remove="$(UnhollowedLibsFolder)/Newtonsoft.Json.dll" />
+  </ItemGroup>
+</Project>
