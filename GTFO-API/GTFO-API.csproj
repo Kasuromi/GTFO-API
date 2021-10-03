@@ -4,9 +4,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>preview</LangVersion>
+    <Platforms>x64</Platforms>
+    
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Platforms>x64</Platforms>
+    
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GTFO-API.Generators\GTFO-API.Generators.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+  </ItemGroup>
 </Project>

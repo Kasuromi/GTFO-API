@@ -11,16 +11,16 @@ namespace GTFO.API
             _logger = new ManualLogSource("GTFO-API");
             Logger.Sources.Add(_logger);
         }
-        private static string Format(object msg) => msg.ToString();
+        private static string Format(string module, object msg) => $"[{module}]: {msg}";
 
-        public static void Info(object data) => _logger.LogMessage(Format(data));
-        public static void Verbose(object data)
+        public static void Info(string module, object data) => _logger.LogMessage(Format(module, data));
+        public static void Verbose(string module, object data)
         {
 #if DEBUG
-            _logger.LogDebug(Format(data));
+            _logger.LogDebug(Format(module, data));
 #endif
         }
-        public static void Debug(object data) => _logger.LogDebug(Format(data));
-        public static void Error(object data) => _logger.LogError(Format(data));
+        public static void Debug(string module, object data) => _logger.LogDebug(Format(module, data));
+        public static void Error(string module, object data) => _logger.LogError(Format(module, data));
     }
 }
