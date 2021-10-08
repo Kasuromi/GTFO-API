@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using AssetShards;
 using GTFO.API.Attributes;
 using GTFO.API.Impl;
@@ -7,8 +8,6 @@ using UnityEngine;
 
 namespace GTFO.API
 {
-    // todo: move functionality to AssetAPI_Impl
-    // and make that Impl depend on an AssetShardManager.Setup Postfix
     [API("Asset")]
     public static class AssetAPI
     {
@@ -29,10 +28,16 @@ namespace GTFO.API
         /// <returns>The <see cref="UnityEngine.Object"/> of the asset requested or null if it's not loaded</returns>
         public static UnityEngine.Object GetLoadedAsset(string path)
         {
-            APILogger.Verbose($"Asset", $"Requested Asset: {path.ToUpper()}");
+            string upperPath = path.ToUpper();
+            APILogger.Verbose($"Asset", $"Requested Asset: {upperPath}");
             try
             {
-                return AssetShardManager.GetLoadedAsset(path.ToUpper());
+                if(!APIStatus.Asset.Ready)
+                {
+                    if (s_RegistryCache.TryGetValue(upperPath, out UnityEngine.Object asset))
+                        return asset;
+                }
+                return AssetShardManager.GetLoadedAsset(upperPath);
             }
             catch
             {
@@ -49,10 +54,13 @@ namespace GTFO.API
         public static void RegisterAsset(string name, UnityEngine.Object gameObject)
         {
             string upperName = name.ToUpper();
-            if (AssetShardManager.s_loadedAssetsLookup.ContainsKey(upperName))
-                throw new ArgumentException($"The asset with {name} has already been registered.", nameof(name));
-
-            AssetShardManager.s_loadedAssetsLookup.Add(upperName, gameObject);
+            if (!APIStatus.Asset.Ready)
+            {
+                if (s_RegistryCache.ContainsKey(upperName)) throw new ArgumentException($"The asset with {upperName} has already been registered.", nameof(name));
+                s_RegistryCache.TryAdd(upperName, gameObject);
+                return;
+            }
+            AssetAPI_Impl.Instance.RegisterAsset(upperName, gameObject);
         }
 
         /// <summary>
@@ -100,6 +108,8 @@ namespace GTFO.API
         public static UnityEngine.Object CloneAsset(string assetName, string copyName)
         {
             var originalAsset = GetLoadedAsset(assetName);
+            if (originalAsset == null) throw new ArgumentException($"Couldn't find an asset with the name '{assetName}'", nameof(assetName));
+
             var newAsset = UnityEngine.Object.Instantiate(originalAsset);
             RegisterAsset(copyName, newAsset);
             return GetLoadedAsset(copyName);
@@ -118,5 +128,7 @@ namespace GTFO.API
         {
             AssetShardManager.add_OnStartupAssetsLoaded((Action)OnAssetsLoaded);
         }
+
+        internal static ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using AssetShards;
+using GTFO.API.Resources;
 using UnityEngine;
 
 namespace GTFO.API.Impl
@@ -18,6 +20,26 @@ namespace GTFO.API.Impl
                 }
                 return s_Instance;
             }
+        }
+
+        private void Awake()
+        {
+            s_Instance = this;
+            APIStatus.Asset.Ready = true;
+            foreach(var cachedRegister in AssetAPI.s_RegistryCache)
+            {
+                RegisterAsset(cachedRegister.Key, cachedRegister.Value);
+            }
+            AssetAPI.s_RegistryCache.Clear();
+        }
+
+        public void RegisterAsset(string name, UnityEngine.Object gameObject)
+        {
+            string upperName = name.ToUpper();
+            if (AssetShardManager.s_loadedAssetsLookup.ContainsKey(upperName))
+                throw new ArgumentException($"The asset with {name} has already been registered.", nameof(name));
+            APILogger.Verbose(nameof(AssetAPI_Impl), $"Registering asset: {name}");
+            AssetShardManager.s_loadedAssetsLookup.Add(upperName, gameObject);
         }
 
         private static AssetAPI_Impl s_Instance;
