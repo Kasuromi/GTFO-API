@@ -82,7 +82,7 @@ namespace GTFO.API.Impl
 
         public void RegisterEvent<T>(string eventName, Action<ulong, T> onReceive) where T : struct
         {
-            if (EventExists(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.");
+            if (EventExists(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.", nameof(eventName));
 
             NetworkingEventInfo<T> eventInfo = new()
             {

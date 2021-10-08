@@ -21,6 +21,7 @@ namespace GTFO.API
 #endif
         }
         public static void Debug(string module, object data) => _logger.LogDebug(Format(module, data));
+        public static void Warn(string module, object data) => _logger.LogWarning(Format(module, data));
         public static void Error(string module, object data) => _logger.LogError(Format(module, data));
     }
 }

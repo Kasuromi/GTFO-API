@@ -13,10 +13,13 @@ namespace GTFO.API
         {
             APILogger.Verbose("Core", "Registering API Implementations");
             ClassInjector.RegisterTypeInIl2Cpp<NetworkAPI_Impl>();
+            ClassInjector.RegisterTypeInIl2Cpp<AssetAPI_Impl>();
 
             APILogger.Verbose("Core", "Applying Patches");
             m_Harmony = new Harmony("dev.gtfomodding.gtfo-api");
             m_Harmony.PatchAll();
+
+            AssetAPI.Setup();
 
             APILogger.Verbose("Core", "Plugin Load Complete");
         }
