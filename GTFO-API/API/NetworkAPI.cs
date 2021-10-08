@@ -11,7 +11,7 @@ using UnhollowerBaseLib;
 namespace GTFO.API
 {
     [API("Network")]
-    public class NetworkAPI : IAPI
+    public static class NetworkAPI
     {
         internal class CachedEvent
         {
@@ -23,7 +23,7 @@ namespace GTFO.API
         /// <summary>
         /// Status info for the <see cref="NetworkAPI"/>
         /// </summary>
-        public ApiStatusInfo Status => APIStatus.Network;
+        public static ApiStatusInfo Status => APIStatus.Network;
 
         /// <summary>
         /// Checks if an event is registered in the <see cref="NetworkAPI"/>
@@ -43,7 +43,7 @@ namespace GTFO.API
         {
             if (!APIStatus.Network.Ready)
             {
-                if (s_EventCache.ContainsKey(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.");
+                if (s_EventCache.ContainsKey(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.", nameof(eventName));
                 s_EventCache.TryAdd(eventName, new CachedEvent
                 {
                     EventName = eventName,

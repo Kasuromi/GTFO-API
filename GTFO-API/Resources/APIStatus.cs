@@ -25,9 +25,19 @@ namespace GTFO.API.Resources
     public static class APIStatus
     {
         /// <summary>
+        /// Status info for the <see cref="AssetAPI"/>
+        /// </summary>
+        public static ApiStatusInfo Asset { get; internal set; } = new();
+
+        /// <summary>
         /// Status info for the <see cref="NetworkAPI"/>
         /// </summary>
         public static ApiStatusInfo Network { get; internal set; } = new();
+
+        /// <summary>
+        /// Status info for the <see cref="PrefabAPI"/>
+        /// </summary>
+        public static ApiStatusInfo Prefab { get; internal set; } = new();
 
         internal static GameObject ScriptHolder
         {
@@ -47,7 +57,7 @@ namespace GTFO.API.Resources
         internal static void CreateApi<T>(string apiName) where T : Component
         {
             ApiStatusInfo statusInfo = (ApiStatusInfo)typeof(APIStatus).GetProperty(apiName)?.GetValue(null);
-            if (statusInfo == null) throw new ArgumentException(nameof(apiName));
+            if (statusInfo == null) throw new ArgumentException($"Couldn't find API status for {apiName}", nameof(apiName));
             if (statusInfo.Created) return;
 
             T existingComp = ScriptHolder.GetComponent<T>();

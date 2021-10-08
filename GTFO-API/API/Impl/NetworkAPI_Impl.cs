@@ -40,6 +40,7 @@ namespace GTFO.API.Impl
                 MethodInfo registerMethod = typeof(NetworkAPI_Impl).GetMethod("RegisterEvent").MakeGenericMethod(cachedEvent.Value.Type);
                 registerMethod.Invoke(this, new object[] { cachedEvent.Key, cachedEvent.Value.OnReceive });
             }
+            NetworkAPI.s_EventCache.Clear();
         }
 
         internal static unsafe void XORPacket(ref byte[] packetBytes, ulong versionSig, int offset)
@@ -80,9 +81,10 @@ namespace GTFO.API.Impl
             receiveDelegateType.GetMethod("Invoke").Invoke(receiveDelegate, new object[] { senderId, managedPacket });
         }
 
+        [HideFromIl2Cpp]
         public void RegisterEvent<T>(string eventName, Action<ulong, T> onReceive) where T : struct
         {
-            if (EventExists(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.");
+            if (EventExists(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.", nameof(eventName));
 
             NetworkingEventInfo<T> eventInfo = new()
             {
@@ -97,6 +99,7 @@ namespace GTFO.API.Impl
         [HideFromIl2Cpp]
         public bool EventExists(string eventName) => m_Events.ContainsKey(eventName);
 
+        [HideFromIl2Cpp]
         public byte[] MakePacketBytes<T>(string eventName, T payload) where T : struct
         {
             byte[] eventNameBytes = Encoding.UTF8.GetBytes(eventName);
