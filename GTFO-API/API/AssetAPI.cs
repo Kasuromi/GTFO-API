@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using AssetShards;
+using BepInEx;
 using GTFO.API.Attributes;
 using GTFO.API.Impl;
 using GTFO.API.Resources;
@@ -22,6 +24,16 @@ namespace GTFO.API
         public static event Action OnStartupAssetsLoaded;
 
         /// <summary>
+        /// Invoked when all external asset bundles have been loaded (Not invoked if no bundles)
+        /// </summary>
+        public static event Action OnAssetBundlesLoaded;
+
+        /// <summary>
+        /// Invoked when the internal handler is ready
+        /// </summary>
+        public static event Action OnImplReady;
+
+        /// <summary>
         /// Obtains an asset from the currently loaded asset shards
         /// </summary>
         /// <param name="path">The path to the asset to use</param>
@@ -32,7 +44,7 @@ namespace GTFO.API
             APILogger.Verbose($"Asset", $"Requested Asset: {upperPath}");
             try
             {
-                if(!APIStatus.Asset.Ready)
+                if (!APIStatus.Asset.Ready)
                 {
                     if (s_RegistryCache.TryGetValue(upperPath, out UnityEngine.Object asset))
                         return asset;
@@ -84,18 +96,24 @@ namespace GTFO.API
         /// Loads an asset bundle by path and registers its assets into the asset registry
         /// </summary>
         /// <param name="pathToBundle">The location of the asset bundle</param>
+        /// <exception cref="Exception">Failed to load the bundle</exception>
         public static void LoadAndRegisterAssetBundle(string pathToBundle)
         {
-            RegisterAssetBundle(AssetBundle.LoadFromFile(pathToBundle));
+            AssetBundle bundle = AssetBundle.LoadFromFile(pathToBundle);
+            if (bundle == null) throw new Exception($"Failed to load asset bundle");
+            RegisterAssetBundle(bundle);
         }
 
         /// <summary>
         /// Loads an asset bundle from bytes and registers its assets into the asset registry
         /// </summary>
         /// <param name="bundleBytes">The raw bytes of the asset bundle</param>
+        /// <exception cref="Exception">Failed to load the bundle</exception>
         public static void LoadAndRegisterAssetBundle(byte[] bundleBytes)
         {
-            RegisterAssetBundle(AssetBundle.LoadFromMemory(bundleBytes));
+            AssetBundle bundle = AssetBundle.LoadFromMemory(bundleBytes);
+            if (bundle == null) throw new Exception($"Failed to load asset bundle");
+            RegisterAssetBundle(bundle);
         }
 
         /// <summary>
@@ -124,9 +142,36 @@ namespace GTFO.API
             OnStartupAssetsLoaded?.Invoke();
         }
 
+        internal static void InvokeImplReady() => OnImplReady?.Invoke();
+
         internal static void Setup()
         {
             AssetShardManager.add_OnStartupAssetsLoaded((Action)OnAssetsLoaded);
+
+            OnImplReady += LoadAssetBundles;
+        }
+
+        private static void LoadAssetBundles()
+        {
+            string assetBundlesDir = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
+            if (!Directory.Exists(assetBundlesDir))
+                Directory.CreateDirectory(assetBundlesDir);
+
+            string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
+            if (bundlePaths.Length == 0) return;
+
+            for (int i = 0; i < bundlePaths.Length; i++)
+            {
+                try
+                {
+                    LoadAndRegisterAssetBundle(bundlePaths[i]);
+                }
+                catch(Exception ex)
+                {
+                    APILogger.Warn(nameof(AssetAPI), $"Failed to load asset bundle '{bundlePaths[i]}' ({ex.Message})");
+                }
+            }
+            OnAssetBundlesLoaded?.Invoke();
         }
 
         internal static ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();

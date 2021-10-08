@@ -31,6 +31,7 @@ namespace GTFO.API.Impl
                 RegisterAsset(cachedRegister.Key, cachedRegister.Value);
             }
             AssetAPI.s_RegistryCache.Clear();
+            AssetAPI.InvokeImplReady();
         }
 
         public void RegisterAsset(string name, UnityEngine.Object gameObject)
