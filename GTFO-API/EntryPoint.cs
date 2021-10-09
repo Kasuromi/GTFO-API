@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.IL2CPP;
 using GTFO.API.Impl;
+using GTFO.API.Patches.Native;
 using HarmonyLib;
 using UnhollowerRuntimeLib;
 
@@ -22,6 +23,8 @@ namespace GTFO.API
             AssetAPI.Setup();
 
             APILogger.Verbose("Core", "Plugin Load Complete");
+
+            new SyringeFirstPerson_Patch().Apply();
         }
 
         private Harmony m_Harmony;
