@@ -34,6 +34,19 @@ namespace GTFO.API
         public static event Action OnImplReady;
 
         /// <summary>
+        /// Checks if an asset is already registered in the <see cref="AssetAPI"/>
+        /// </summary>
+        /// <param name="name">Name of the asset to check</param>
+        /// <returns>Whether the asset is registered or not</returns>
+        public static bool IsAssetRegistered(string name)
+        {
+            if (!APIStatus.Asset.Ready)
+                return s_RegistryCache.ContainsKey(name);
+
+            return AssetShardManager.s_loadedAssetsLookup.ContainsKey(name);
+        }
+
+        /// <summary>
         /// Obtains an asset from the currently loaded asset shards
         /// </summary>
         /// <param name="path">The path to the asset to use</param>
@@ -122,11 +135,12 @@ namespace GTFO.API
         /// <param name="assetName">The original asset name</param>
         /// <param name="copyName">The name it should be cloned into</param>
         /// <returns>The <see cref="UnityEngine.Object"/> of the asset requested or null if it's not loaded</returns>
-        /// <exception cref="ArgumentException">The name is already registered</exception>
+        /// <exception cref="ArgumentException">The name you're trying to copy into is already registered</exception>
         public static UnityEngine.Object CloneAsset(string assetName, string copyName)
         {
             var originalAsset = GetLoadedAsset(assetName);
             if (originalAsset == null) throw new ArgumentException($"Couldn't find an asset with the name '{assetName}'", nameof(assetName));
+            if (IsAssetRegistered(copyName)) throw new ArgumentException($"The asset you're trying to copy into is already registered", nameof(copyName));
 
             var newAsset = UnityEngine.Object.Instantiate(originalAsset);
             RegisterAsset(copyName, newAsset);
@@ -140,9 +154,19 @@ namespace GTFO.API
         /// <param name="assetName">The original asset name</param>
         /// <param name="copyName">The name it should be cloned into</param>
         /// <returns>The asset requested as <typeparamref name="T"/> or null if it's not loaded</returns>
-        /// <exception cref="ArgumentException">The name is already registered</exception>
+        /// <exception cref="ArgumentException">The name you're trying to copy into is already registered</exception>
         /// <exception cref="InvalidCastException">The asset cannot be cast to <typeparamref name="T"/></exception>
         public static T CloneAsset<T>(string assetName, string copyName) where T : UnityEngine.Object => CloneAsset(assetName, copyName)?.Cast<T>();
+
+        /// <summary>
+        /// Attempts to clone an asset into a new one with a different name
+        /// </summary>
+        /// <typeparam name="T">Type of asset to extract</typeparam>
+        /// <param name="assetName">The original asset name</param>
+        /// <param name="copyName">The name it should be cloned into</param>
+        /// <returns>The asset requested as <typeparamref name="T"/> or null if it's not loaded or cannot be cast</returns>
+        /// <exception cref="ArgumentException">The name you're trying to copy into is already registered</exception>
+        public static T TryCloneAsset<T>(string assetName, string copyName) where T : UnityEngine.Object => CloneAsset(assetName, copyName)?.TryCast<T>();
 
         private static void OnAssetsLoaded()
         {
