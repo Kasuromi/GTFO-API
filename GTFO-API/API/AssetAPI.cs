@@ -133,6 +133,17 @@ namespace GTFO.API
             return GetLoadedAsset(copyName);
         }
 
+        /// <summary>
+        /// Clones an asset into a new one with a different name
+        /// </summary>
+        /// <typeparam name="T">Type of asset to extract</typeparam>
+        /// <param name="assetName">The original asset name</param>
+        /// <param name="copyName">The name it should be cloned into</param>
+        /// <returns>The asset requested as <typeparamref name="T"/> or null if it's not loaded</returns>
+        /// <exception cref="ArgumentException">The name is already registered</exception>
+        /// <exception cref="InvalidCastException">The asset cannot be cast to <typeparamref name="T"/></exception>
+        public static T CloneAsset<T>(string assetName, string copyName) where T : UnityEngine.Object => CloneAsset(assetName, copyName)?.Cast<T>();
+
         private static void OnAssetsLoaded()
         {
             if (!APIStatus.Asset.Created)
