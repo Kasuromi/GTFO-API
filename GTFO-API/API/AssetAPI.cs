@@ -40,10 +40,11 @@ namespace GTFO.API
         /// <returns>Whether the asset is registered or not</returns>
         public static bool ContainsAsset(string assetName)
         {
+            string upperName = assetName.ToUpper();
             if (!APIStatus.Asset.Ready)
-                return s_RegistryCache.ContainsKey(assetName);
+                return s_RegistryCache.ContainsKey(upperName);
 
-            return AssetShardManager.s_loadedAssetsLookup.ContainsKey(assetName);
+            return AssetShardManager.s_loadedAssetsLookup.ContainsKey(upperName);
         }
 
         /// <summary>
