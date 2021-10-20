@@ -17,9 +17,9 @@ namespace GTFO.API.Patches.Native
         };
 
         public override uint TrampolineSize => 13;
-        public override unsafe SyringeUsedDelegate To => TestCall;
+        public override unsafe SyringeUsedDelegate To => OnSyringeApplyEffect;
 
-        public static unsafe eSyringeType TestCall(void* pSyringe)
+        public static unsafe eSyringeType OnSyringeApplyEffect(void* pSyringe)
         {
             SyringeFirstPerson syringe = new SyringeFirstPerson(new IntPtr(pSyringe));
             if (PrefabAPI.OnSyringeUsed(syringe)) return (eSyringeType)unchecked(-1);
