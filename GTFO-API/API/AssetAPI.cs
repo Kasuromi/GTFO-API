@@ -34,6 +34,20 @@ namespace GTFO.API
         public static event Action OnImplReady;
 
         /// <summary>
+        /// Checks if an asset is already registered in the <see cref="AssetAPI"/>
+        /// </summary>
+        /// <param name="assetName">Name of the asset to check</param>
+        /// <returns>Whether the asset is registered or not</returns>
+        public static bool ContainsAsset(string assetName)
+        {
+            string upperName = assetName.ToUpper();
+            if (!APIStatus.Asset.Ready)
+                return s_RegistryCache.ContainsKey(upperName);
+
+            return AssetShardManager.s_loadedAssetsLookup.ContainsKey(upperName);
+        }
+
+        /// <summary>
         /// Obtains an asset from the currently loaded asset shards
         /// </summary>
         /// <param name="path">The path to the asset to use</param>
@@ -122,15 +136,45 @@ namespace GTFO.API
         /// <param name="assetName">The original asset name</param>
         /// <param name="copyName">The name it should be cloned into</param>
         /// <returns>The <see cref="UnityEngine.Object"/> of the asset requested or null if it's not loaded</returns>
-        /// <exception cref="ArgumentException">The name is already registered</exception>
-        public static UnityEngine.Object CloneAsset(string assetName, string copyName)
+        /// <exception cref="ArgumentException">The name you're trying to copy into is already registered</exception>
+        public static UnityEngine.Object InstantiateAsset(string assetName, string copyName)
         {
-            var originalAsset = GetLoadedAsset(assetName);
-            if (originalAsset == null) throw new ArgumentException($"Couldn't find an asset with the name '{assetName}'", nameof(assetName));
+            if (ContainsAsset(copyName)) throw new ArgumentException($"The asset you're trying to copy into is already registered", nameof(copyName));
+            RegisterAsset(
+                copyName, 
+                UnityEngine.Object.Instantiate(
+                    GetLoadedAsset(assetName) ?? throw new ArgumentException($"Couldn't find an asset with the name '{assetName}'", nameof(assetName))
+                )
+            );
 
-            var newAsset = UnityEngine.Object.Instantiate(originalAsset);
-            RegisterAsset(copyName, newAsset);
             return GetLoadedAsset(copyName);
+        }
+
+        /// <summary>
+        /// Clones an asset into a new one with a different name
+        /// </summary>
+        /// <typeparam name="TAsset">Type of asset to extract</typeparam>
+        /// <param name="assetName">The original asset name</param>
+        /// <param name="copyName">The name it should be cloned into</param>
+        /// <returns>The asset requested as <typeparamref name="TAsset"/> or null if it's not loaded</returns>
+        /// <exception cref="ArgumentException">The name you're trying to copy into is already registered</exception>
+        /// <exception cref="InvalidCastException">The asset cannot be cast to <typeparamref name="TAsset"/></exception>
+        public static TAsset InstantiateAsset<TAsset>(string assetName, string copyName) where TAsset : UnityEngine.Object
+            => InstantiateAsset(assetName, copyName)?.Cast<TAsset>();
+
+        /// <summary>
+        /// Attempts to clone an asset into a new one with a different name
+        /// </summary>
+        /// <typeparam name="TAsset">Type of asset to extract</typeparam>
+        /// <param name="assetName">The original asset name</param>
+        /// <param name="copyName">The name it should be cloned into</param>
+        /// <param name="clonedObj"></param>
+        /// <returns>If the asset was successfully copied and cast to <typeparamref name="TAsset"/></returns>
+        /// <exception cref="ArgumentException">The name you're trying to copy into is already registered</exception>
+        public static bool TryInstantiateAsset<TAsset>(string assetName, string copyName, out TAsset clonedObj) where TAsset : UnityEngine.Object
+        {
+            clonedObj = InstantiateAsset(assetName, copyName)?.TryCast<TAsset>();
+            return clonedObj != null;
         }
 
         private static void OnAssetsLoaded()
