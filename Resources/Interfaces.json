@@ -1,0 +1,28 @@
+{
+  "LevelGeneration.iTerminalItem": [
+    "uint TerminalItemId { get; set; }",
+    "void Setup(string key);",
+    "string TerminalItemKey { get; set; }",
+    "string OverrideCode { get; set; }",
+    "Vector3 LocatorBeaconPosition { get; set; }",
+    "AIGraph.AIG_CourseNode SpawnNode { get; set; }",
+    "bool ShowInFloorInventory { get; set; }",
+    "string FloorItemLocation { get; set; }",
+    "LevelGeneration.eFloorInventoryObjectType FloorItemType { get; set; }",
+    "LevelGeneration.eFloorInventoryObjectStatus FloorItemStatus { get; set; }",
+    "List<string> GetDetailedInfo(List<string> defaultDetails);",
+    "Il2CppSystem.Func<List<string>, List<string>> OnWantDetailedInfo { get; set; }",
+    "void PlayPing();"
+  ],
+  "Gear.iResourcePackReceiver": [
+    "bool IsLocallyOwned { get; }",
+    "string InteractionName { get; }",
+    "bool NeedHealth();",
+    "bool NeedDisinfection();",
+    "bool NeedWeaponAmmo();",
+    "bool NeedToolAmmo();",
+    "void GiveAmmoRel(float ammoStandardRel, float ammoSpecialRel, float ammoClassRel);",
+    "void GiveHealth(float health);",
+    "void GiveDisinfection(float disinfection);"
+  ]
+}
