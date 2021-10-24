@@ -12,6 +12,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.11.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" GeneratePathProperty="true"/>
+    <EmbeddedResource Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\Newtonsoft.Json.dll" Visible="false" />
   </ItemGroup>
 
 </Project>

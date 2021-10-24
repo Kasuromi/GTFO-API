@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using GameData;
+﻿using GameData;
 using Globals;
 using HarmonyLib;
 using UnityEngine.Analytics;
