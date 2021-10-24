@@ -15,6 +15,7 @@ namespace GTFO.API.Patches
         public static void Initialize_Postfix()
         {
             Analytics.enabled = false;
+
             GameSetupDataBlock setupBlock = GameDataBlockBase<GameSetupDataBlock>.GetBlock(1);
             if (setupBlock?.RundownIdToLoad != 1)
             {
@@ -30,6 +31,9 @@ namespace GTFO.API.Patches
 
                 setupBlock.RundownIdToLoad = 1;
             }
+
+            GameDataAPI.InvokeGameDataInit();
+
             if (APIStatus.Network.Created) return;
             APIStatus.CreateApi<NetworkAPI_Impl>(nameof(APIStatus.Network));
         }
