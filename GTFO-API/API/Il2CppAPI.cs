@@ -40,7 +40,7 @@ namespace GTFO.API
                     .GetField("NativeClassPtr")
                     .GetValue(null);
 
-                il2cpp_runtime_class_init(pClass);
+                IL2CPP.il2cpp_runtime_class_init((IntPtr)pClass);
 
                 interfaces.Add(UnityVersionHandler.Wrap(pClass));
             }
@@ -56,8 +56,5 @@ namespace GTFO.API
                     .SelectMany(interfaceType => interfaceType.GetCustomAttributes(attributeType, true)))
                 .Distinct().Cast<TAttribute>();
         }
-
-        [DllImport("GameAssembly", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        internal static extern unsafe void il2cpp_runtime_class_init(Il2CppClass* pClass);
     }
 }
