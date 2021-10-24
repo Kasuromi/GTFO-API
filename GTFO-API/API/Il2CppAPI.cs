@@ -48,6 +48,41 @@ namespace GTFO.API
             ClassInjector.RegisterTypeInIl2Cpp<T>(interfaces.ToArray());
         }
 
+        /// <summary>
+        /// Obtains the function pointer for an Il2Cpp internal method
+        /// </summary>
+        /// <typeparam name="T">The type to look for the method in</typeparam>
+        /// <param name="methodName">Method name in <typeparamref name="T"/></param>
+        /// <param name="returnTypeName">Full return type name e.g (System.Void)</param>
+        /// <param name="argTypes">List of full type names for the arguments e.g (System.Single)</param>
+        /// <returns>Function pointer of the Il2Cpp method or 0x00 if not found</returns>
+        public static unsafe void* GetIl2CppMethod<T>(string methodName, string returnTypeName, params string[] argTypes) where T : Il2CppObjectBase
+        {
+            void** ppMethod = (void**)IL2CPP.GetIl2CppMethod(Il2CppClassPointerStore<T>.NativeClassPtr, false, methodName, returnTypeName, argTypes).ToPointer();
+            if ((long)ppMethod == 0) return ppMethod;
+
+            return *ppMethod;
+        }
+
+        /// <summary>
+        /// Obtains a delegate for an Il2Cpp internal method
+        /// </summary>
+        /// <typeparam name="T">The type to look for the method in</typeparam>
+        /// <typeparam name="TDelegate">The delegate to returns</typeparam>
+        /// <param name="methodName">Method name in <typeparamref name="T"/></param>
+        /// <param name="returnTypeName">Full return type name e.g (System.Void)</param>
+        /// <param name="argTypes">List of full type names for the arguments e.g (System.Single)</param>
+        /// <returns>A delegate to invoke the Il2Cpp method or null if invalid</returns>
+        public static unsafe TDelegate GetIl2CppMethod<T, TDelegate>(string methodName, string returnTypeName, params string[] argTypes)
+            where T : Il2CppObjectBase
+            where TDelegate : Delegate
+        {
+            void* pMethod = GetIl2CppMethod<T>(methodName, returnTypeName, argTypes);
+            if ((long)pMethod == 0) return null;
+
+            return Marshal.GetDelegateForFunctionPointer<TDelegate>((IntPtr)pMethod);
+        }
+
         private static IEnumerable<TAttribute> GetCustomAttributesInType<T, TAttribute>() where TAttribute : Attribute
         {
             var attributeType = typeof(TAttribute);
