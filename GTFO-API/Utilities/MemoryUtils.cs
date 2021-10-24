@@ -11,11 +11,6 @@ namespace GTFO.API.Utilities
             0xFF, 0xD0                                                          // call     rax
         };
 
-        public static unsafe void* GetIl2CppMethod<T>(string methodName, string returnTypeName, params string[] argTypes) where T : Il2CppObjectBase
-        {
-            return *(void**)IL2CPP.GetIl2CppMethod(Il2CppClassPointerStore<T>.NativeClassPtr, false, methodName, returnTypeName, argTypes).ToPointer();
-        }
-
         public static unsafe void* FindSignatureInBlock(void* block, ulong blockSize, string pattern, string mask, ulong sigOffset = 0)
             => FindSignatureInBlock(block, blockSize, pattern.ToCharArray(), mask.ToCharArray(), sigOffset);
 
