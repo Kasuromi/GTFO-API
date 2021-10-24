@@ -1,6 +1,5 @@
 ﻿using System;
 using GTFO.API.Native;
-using UnhollowerBaseLib;
 
 namespace GTFO.API.Utilities
 {

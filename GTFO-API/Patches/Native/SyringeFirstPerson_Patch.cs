@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using GTFO.API.Native;
-using GTFO.API.Utilities;
 
 namespace GTFO.API.Patches.Native
 {
