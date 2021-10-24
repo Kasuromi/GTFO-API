@@ -86,6 +86,22 @@ namespace GTFO.API
             instanceAsset.AddComponent<T>();
         }
 
+        /// <summary>
+        /// Creates a gear component and applies necessary shaders and components
+        /// </summary>
+        /// <param name="assetName">The asset to create a gear component from</param>
+        /// <param name="enableEmissive">If the gear component GFX should be emissive</param>
+        /// <exception cref="ArgumentException">The asset isn't loaded</exception>
+        public static void CreateGearComponent(string assetName, bool enableEmissive = false)
+        {
+            GameObject gearComponent = AssetAPI.GetLoadedAsset(assetName)?.TryCast<GameObject>() ?? null;
+            if (gearComponent == null) throw new ArgumentException($"Couldnt find a game object asset with the name {assetName}", nameof(assetName));
+
+            gearComponent.layer = LayerMask.NameToLayer("FirstPersonItem");
+
+            ReplaceShaderInAssetMaterials(gearComponent, CustomGearShader, "ENABLE_FPS_RENDERING", enableEmissive ? "ENABLE_EMISSIVE" : null);
+        }
+
         private static void ReplaceShaderInAssetMaterials(GameObject asset, Shader newShader, params string[] addedKeywords)
         {
             addedKeywords = addedKeywords.Where((x) => !string.IsNullOrEmpty(x)).ToArray();
