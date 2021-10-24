@@ -2,6 +2,7 @@
 using BepInEx.IL2CPP;
 using GTFO.API.Impl;
 using GTFO.API.Patches.Native;
+using GTFO.API.Wrappers;
 using HarmonyLib;
 using UnhollowerRuntimeLib;
 
@@ -15,6 +16,9 @@ namespace GTFO.API
             APILogger.Verbose("Core", "Registering API Implementations");
             ClassInjector.RegisterTypeInIl2Cpp<NetworkAPI_Impl>();
             ClassInjector.RegisterTypeInIl2Cpp<AssetAPI_Impl>();
+
+            APILogger.Verbose("Core", "Registering Wrappers");
+            ClassInjector.RegisterTypeInIl2Cpp<ItemWrapped>();
 
             APILogger.Verbose("Core", "Applying Patches");
             m_Harmony = new Harmony("dev.gtfomodding.gtfo-api");
