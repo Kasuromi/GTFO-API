@@ -104,6 +104,7 @@ namespace GTFO.API
             ReplaceShaderInAssetMaterials(gearComponent, CustomGearShader, "ENABLE_FPS_RENDERING", enableEmissive ? "ENABLE_EMISSIVE" : null);
         }
         
+        /// <summary>
         /// Attaches an OnUse action to a syringe by persistent id
         /// </summary>
         /// <param name="itemPersistentId">The persistent ID of the syringe from the <see cref="ItemDataBlock"/></param>
