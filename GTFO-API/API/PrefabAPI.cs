@@ -90,7 +90,7 @@ namespace GTFO.API
         /// Creates a gear component and applies necessary shaders and components
         /// </summary>
         /// <param name="assetName">The asset to create a gear component from</param>
-        /// /// <param name="enableEmissive">If the gear component GFX should be emissive</param>
+        /// <param name="enableEmissive">If the gear component GFX should be emissive</param>
         /// <exception cref="ArgumentException">The asset isn't loaded</exception>
         public static void CreateGearComponent(string assetName, bool enableEmissive = false)
         {
