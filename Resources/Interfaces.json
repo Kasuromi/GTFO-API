@@ -24,5 +24,19 @@
     "void GiveAmmoRel(float ammoStandardRel, float ammoSpecialRel, float ammoClassRel);",
     "void GiveHealth(float health);",
     "void GiveDisinfection(float disinfection);"
+  ],
+  "iPlayerPingTarget": [
+    "eNavMarkerStyle PingTargetStyle { get; set; }"
+  ],
+  "iWardenObjectiveItem": [
+    "LevelGeneration.LG_LayerType OriginLayer { get; }",
+    "AIGraph.AIG_CourseNode SpawnNode { get; }",
+    "string PublicName { get; }",
+    "Transform transform { get; }",
+    "bool ObjectiveItemSolved { get; }",
+    "LevelGeneration.ePickupItemStatus PickupItemStatus { get; }",
+    "Player.PlayerAgent PickedUpByPlayer { get; }",
+    "void ActivateWardenObjectiveItem();",
+    "void DeactivateWardenObjectiveItem();"
   ]
 }
