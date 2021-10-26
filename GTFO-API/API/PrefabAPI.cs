@@ -117,7 +117,7 @@ namespace GTFO.API
                         int originalSize = keywords.Length;
                         Array.Resize(ref keywords, keywords.Length + addedKeywords.Length);
 
-                        for(int i = addedKeywords.Length; i < addedKeywords.Length; i++)
+                        for(int i = 0; i < addedKeywords.Length; i++)
                         {
                             keywords[originalSize + i] = addedKeywords[i];
                         }
