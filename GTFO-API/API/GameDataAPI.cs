@@ -1,5 +1,5 @@
-﻿using System;
-using GTFO.API.Attributes;
+using System;
+using GTFO.API.Attributes
 using GTFO.API.Resources;
 
 namespace GTFO.API
