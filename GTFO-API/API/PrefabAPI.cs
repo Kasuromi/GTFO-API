@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using GameData;
 using GTFO.API.Attributes;
 using GTFO.API.Components;
 using GTFO.API.Resources;
@@ -101,6 +103,29 @@ namespace GTFO.API
 
             ReplaceShaderInAssetMaterials(gearComponent, CustomGearShader, "ENABLE_FPS_RENDERING", enableEmissive ? "ENABLE_EMISSIVE" : null);
         }
+        
+        /// <summary>
+        /// Attaches an OnUse action to a syringe by persistent id
+        /// </summary>
+        /// <param name="itemPersistentId">The persistent ID of the syringe from the <see cref="ItemDataBlock"/></param>
+        /// <param name="onUse">The delegate that will be called when the syringe is used</param>
+        /// <exception cref="ArgumentException">This persistent ID already has a registered use action</exception>
+        public static void CreateSyringe(uint itemPersistentId, Action<SyringeFirstPerson> onUse)
+        {
+            if (s_SyringeActions.ContainsKey(itemPersistentId))
+                throw new ArgumentException($"{itemPersistentId} is already registered with a syringe action.");
+
+            s_SyringeActions.Add(itemPersistentId, onUse);
+        }
+
+        internal static bool OnSyringeUsed(SyringeFirstPerson syringe)
+        {
+            if (s_SyringeActions.TryGetValue(syringe.ItemDataBlock.persistentID, out var handler)) {
+                handler.Invoke(syringe);
+                return true;
+            }
+            return false;
+        }
 
         private static void ReplaceShaderInAssetMaterials(GameObject asset, Shader newShader, params string[] addedKeywords)
         {
@@ -136,5 +161,6 @@ namespace GTFO.API
             }
         }
         private static Shader s_CustomGearShader;
+        private static readonly Dictionary<uint, Action<SyringeFirstPerson>> s_SyringeActions = new();
     }
 }

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using GTFO.API.Attributes;
+using System;
+using GTFO.API.Attributes
 using GTFO.API.Resources;
 
 namespace GTFO.API
