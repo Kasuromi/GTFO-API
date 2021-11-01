@@ -4,7 +4,7 @@ using GTFO.API.Utilities;
 
 namespace GTFO.API.Native
 {
-    internal abstract class NativePatch<T> where T : Delegate
+    public abstract class NativePatch<T> where T : Delegate
     {
         private static readonly byte[] s_CodeCaveHeader = new byte[] {
             0x48, 0x83, 0xEC, 0x28                                              // sub      rsp,  0x28
