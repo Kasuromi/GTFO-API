@@ -92,7 +92,7 @@ namespace GTFO.API.Wrappers
         private static readonly Item__SyncedThrow SyncedThrowBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedThrow>("SyncedThrow", "System.Void", "Player.PlayerAgent");
         private static readonly Item__SyncedPickup SyncedPickupBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedPickup>("SyncedPickup", "System.Void", "Player.PlayerAgent");
         private static readonly Item__SyncedSetKeyValue SyncedSetKeyValueBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedSetKeyValue>("SyncedSetKeyValue", "System.Void", "System.Int32", "System.Single");
-        private static readonly Item__GetPickupInteraction GetPickupInteractionBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetPickupInteraction>("GetPickupInteraction", "System.Void");
+        private static readonly Item__GetPickupInteraction GetPickupInteractionBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetPickupInteraction>("GetPickupInteraction", "Interact_Base");
         private static readonly Item__GetItem GetItemBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetItem>("GetItem", "Item");
     }
 #pragma warning restore CS1591
