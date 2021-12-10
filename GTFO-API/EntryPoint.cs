@@ -28,7 +28,8 @@ namespace GTFO.API
 
             APILogger.Verbose("Core", "Plugin Load Complete");
 
-            new SyringeFirstPerson_Patch().Apply();
+            APILogger.Warn("GTFO-API", "Syringes are currently disabled in this version");
+            //new SyringeFirstPerson_Patch().Apply();
         }
 
         private Harmony m_Harmony;

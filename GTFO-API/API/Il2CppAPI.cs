@@ -45,7 +45,11 @@ namespace GTFO.API
                 interfaces.Add(UnityVersionHandler.Wrap(pClass));
             }
 
-            ClassInjector.RegisterTypeInIl2Cpp(typeof(T), true, interfaces.ToArray());
+            ClassInjector.RegisterTypeInIl2Cpp<T>(new RegisterTypeOptions()
+            {
+                LogSuccess = true,
+                Interfaces = interfaces.ToArray()
+            });
         }
 
         /// <summary>
