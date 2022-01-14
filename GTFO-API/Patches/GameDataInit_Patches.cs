@@ -26,6 +26,31 @@ namespace GTFO.API.Patches
                 block.persistentID = 1;
                 block.name = $"MOVEDBYAPI_{block.name}";
 
+                block.UseTierUnlockRequirements = false;
+                RemoveRequirementFromList(block.TierA);
+                RemoveRequirementFromList(block.TierB);
+                RemoveRequirementFromList(block.TierC);
+                RemoveRequirementFromList(block.TierD);
+                RemoveRequirementFromList(block.TierE);
+
+                static void RemoveRequirementFromList(Il2CppSystem.Collections.Generic.List<ExpeditionInTierData> list)
+                {
+                    foreach (var expedition in list)
+                    {
+                        if (!expedition.Enabled)
+                            continue;
+
+                        switch (expedition.Accessibility)
+                        {
+                            case eExpeditionAccessibility.Normal:
+                            case eExpeditionAccessibility.UnlockedByExpedition:
+                            case eExpeditionAccessibility.UseCustomProgressionLock:
+                                expedition.Accessibility = eExpeditionAccessibility.AlwaysAllow;
+                                break;
+                        }
+                    }
+                }
+
                 RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdToLoad);
                 RundownDataBlock.AddBlock(block, -1);
 
