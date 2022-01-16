@@ -33,24 +33,6 @@ namespace GTFO.API.Patches
                 RemoveRequirementFromList(block.TierD);
                 RemoveRequirementFromList(block.TierE);
 
-                static void RemoveRequirementFromList(Il2CppSystem.Collections.Generic.List<ExpeditionInTierData> list)
-                {
-                    foreach (var expedition in list)
-                    {
-                        if (!expedition.Enabled)
-                            continue;
-
-                        switch (expedition.Accessibility)
-                        {
-                            case eExpeditionAccessibility.Normal:
-                            case eExpeditionAccessibility.UnlockedByExpedition:
-                            case eExpeditionAccessibility.UseCustomProgressionLock:
-                                expedition.Accessibility = eExpeditionAccessibility.AlwaysAllow;
-                                break;
-                        }
-                    }
-                }
-
                 RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdToLoad);
                 RundownDataBlock.AddBlock(block, -1);
 
@@ -61,6 +43,24 @@ namespace GTFO.API.Patches
 
             if (APIStatus.Network.Created) return;
             APIStatus.CreateApi<NetworkAPI_Impl>(nameof(APIStatus.Network));
+        }
+    }
+    
+    private static void RemoveRequirementFromList(Il2CppSystem.Collections.Generic.List<ExpeditionInTierData> list)
+    {
+        foreach (var expedition in list)
+        {
+            if (!expedition.Enabled)
+                continue;
+
+            switch (expedition.Accessibility)
+            {
+                case eExpeditionAccessibility.Normal:
+                case eExpeditionAccessibility.UnlockedByExpedition:
+                case eExpeditionAccessibility.UseCustomProgressionLock:
+                    expedition.Accessibility = eExpeditionAccessibility.AlwaysAllow;
+                    break;
+            }
         }
     }
 }
