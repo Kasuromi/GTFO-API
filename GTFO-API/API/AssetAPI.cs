@@ -72,6 +72,16 @@ namespace GTFO.API
         }
 
         /// <summary>
+        /// Obtains an asset from the currently loaded asset shards and casts it to <typeparamref name="TAsset"/>
+        /// </summary>
+        /// <typeparam name="TAsset">The type of asset to load</typeparam>
+        /// <param name="path">The path to the asset to use</param>
+        /// <returns><typeparamref name="TAsset"/> as the asset requested or null if it's not loaded</returns>
+        /// <exception cref="InvalidCastException">The loaded asset cannot be cast to <typeparamref name="TAsset"/></exception>
+        public static TAsset GetLoadedAsset<TAsset>(string path) where TAsset : UnityEngine.Object
+            => GetLoadedAsset(path)?.Cast<TAsset>();
+
+        /// <summary>
         /// Registers an asset into the asset shard lookup
         /// </summary>
         /// <param name="name">The name/path of the asset to use as a lookup</param>
