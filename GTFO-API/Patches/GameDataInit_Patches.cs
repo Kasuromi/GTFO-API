@@ -44,22 +44,21 @@ namespace GTFO.API.Patches
             if (APIStatus.Network.Created) return;
             APIStatus.CreateApi<NetworkAPI_Impl>(nameof(APIStatus.Network));
         }
-    }
-    
-    private static void RemoveRequirementFromList(Il2CppSystem.Collections.Generic.List<ExpeditionInTierData> list)
-    {
-        foreach (var expedition in list)
+        private static void RemoveRequirementFromList(Il2CppSystem.Collections.Generic.List<ExpeditionInTierData> list)
         {
-            if (!expedition.Enabled)
-                continue;
-
-            switch (expedition.Accessibility)
+            foreach (var expedition in list)
             {
-                case eExpeditionAccessibility.Normal:
-                case eExpeditionAccessibility.UnlockedByExpedition:
-                case eExpeditionAccessibility.UseCustomProgressionLock:
-                    expedition.Accessibility = eExpeditionAccessibility.AlwaysAllow;
-                    break;
+                if (!expedition.Enabled)
+                    continue;
+
+                switch (expedition.Accessibility)
+                {
+                    case eExpeditionAccessibility.Normal:
+                    case eExpeditionAccessibility.UnlockedByExpedition:
+                    case eExpeditionAccessibility.UseCustomProgressionLock:
+                        expedition.Accessibility = eExpeditionAccessibility.AlwaysAllow;
+                        break;
+                }
             }
         }
     }
