@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Gear;
+﻿using Gear;
 using HarmonyLib;
 
 namespace GTFO.API.Patches
@@ -8,6 +7,7 @@ namespace GTFO.API.Patches
     internal class GearManager_Patches
     {
         [HarmonyPatch(nameof(GearManager.RegisterGearInSlotAsEquipped))]
+        [HarmonyWrapSafe]
         [HarmonyPrefix]
         public static bool RegisterGearInSlotAsEquipped_Prefix()
         {
@@ -15,6 +15,7 @@ namespace GTFO.API.Patches
         }
 
         [HarmonyPatch(nameof(GearManager.RegisterBotGearInSlotAsEquipped))]
+        [HarmonyWrapSafe]
         [HarmonyPrefix]
         public static bool RegisterBotGearInSlotAsEquipped_Prefix()
         {
@@ -22,6 +23,7 @@ namespace GTFO.API.Patches
         }
 
         [HarmonyPatch(nameof(GearManager.SaveFavoritesData))]
+        [HarmonyWrapSafe]
         [HarmonyPrefix]
         public static bool SaveFavoritesData_Prefix()
         {
@@ -29,6 +31,7 @@ namespace GTFO.API.Patches
         }
 
         [HarmonyPatch(nameof(GearManager.LoadOfflineGearDatas))]
+        [HarmonyWrapSafe]
         [HarmonyPostfix]
         public static void LoadOfflineGearDatas_Postfix()
         {
