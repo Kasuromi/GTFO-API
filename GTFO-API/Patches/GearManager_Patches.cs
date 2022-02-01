@@ -21,6 +21,13 @@ namespace GTFO.API.Patches
             return false;
         }
 
+        [HarmonyPatch(nameof(GearManager.SaveFavoritesData))]
+        [HarmonyPrefix]
+        public static bool SaveFavoritesData_Prefix()
+        {
+            return false;
+        }
+
         [HarmonyPatch(nameof(GearManager.LoadOfflineGearDatas))]
         [HarmonyPostfix]
         public static void LoadOfflineGearDatas_Postfix()
