@@ -19,7 +19,7 @@ namespace GTFO.API.Patches
 
             if (string.IsNullOrEmpty(GearManager.BotFavoritesData.LastEquipped_Standard[index]))
             {
-                APILogger.Debug(nameof(PlayerBackpackManager), "Bot does not have favorites yet, falling back to copying player's favorites");
+                APILogger.Debug(nameof(PlayerBackpackManager_Patches), "Bot does not have favorites yet, falling back to copying player's favorites");
                 return true;
             }
 
