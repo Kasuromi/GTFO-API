@@ -17,7 +17,7 @@ namespace GTFO.API.Patches
             if (string.IsNullOrEmpty(GearManager_Patches.BotFavorites[InventorySlot.GearMelee][botIndex]))
             {
                 PlayerBackpackManager.CopyGearToBot(bot, PlayerBackpackManager.LocalBackpack);
-            } 
+            }
             else
             {
                 PlayerBackpackManager.EquipBotGear(bot, GearManager_Patches.BotFavorites[InventorySlot.GearMelee][botIndex]);
