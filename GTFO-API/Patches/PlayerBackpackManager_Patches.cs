@@ -12,7 +12,7 @@ namespace GTFO.API.Patches
         [HarmonyPrefix]
         public static bool GiveFavoriteGearToBotPrefix(SNet_Player bot, ref bool __result)
         {
-            var botIndex = bot.PlayerSlotIndex();
+            int botIndex = bot.PlayerSlotIndex();
 
             if (string.IsNullOrEmpty(GearManager_Patches.BotFavorites[InventorySlot.GearMelee][botIndex]))
             {
