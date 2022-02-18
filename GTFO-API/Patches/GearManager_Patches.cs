@@ -1,23 +1,19 @@
-﻿using System.Collections.Generic;
-using Gear;
+﻿using Gear;
+using GTFO.API.Resources;
 using HarmonyLib;
 using Player;
-using UnhollowerBaseLib.Attributes;
 
 namespace GTFO.API.Patches
 {
     [HarmonyPatch(typeof(GearManager))]
     internal class GearManager_Patches
     {
-        [HideFromIl2Cpp]
-        public static Dictionary<InventorySlot, string[]> BotFavorites { get; set; }
-
         [HarmonyPatch(nameof(GearManager.Setup))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]
         public static void Setup_Postfix()
         {
-            BotFavorites = new()
+            PersistentData.BotFavorites = new()
             {
                 [InventorySlot.GearMelee] = new string[4],
                 [InventorySlot.GearStandard] = new string[4],
@@ -34,7 +30,7 @@ namespace GTFO.API.Patches
         [HarmonyPrefix]
         public static bool RegisterBotGearInSlotAsEquipped_Prefix(GearIDRange idRange, InventorySlot slot, int slotIndex)
         {
-            BotFavorites[slot][slotIndex] = idRange.ToJSON();
+            PersistentData.BotFavorites[slot][slotIndex] = idRange.ToJSON();
             return false;
         }
 

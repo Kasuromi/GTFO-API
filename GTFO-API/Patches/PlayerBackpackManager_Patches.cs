@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using GTFO.API.Resources;
+using HarmonyLib;
 using Player;
 using SNetwork;
 
@@ -14,17 +15,17 @@ namespace GTFO.API.Patches
         {
             int botIndex = bot.PlayerSlotIndex();
 
-            if (string.IsNullOrEmpty(GearManager_Patches.BotFavorites[InventorySlot.GearMelee][botIndex]))
+            if (string.IsNullOrEmpty(PersistentData.BotFavorites[InventorySlot.GearMelee][botIndex]))
             {
                 PlayerBackpackManager.CopyGearToBot(bot, PlayerBackpackManager.LocalBackpack);
             }
             else
             {
-                PlayerBackpackManager.EquipBotGear(bot, GearManager_Patches.BotFavorites[InventorySlot.GearMelee][botIndex]);
-                PlayerBackpackManager.EquipBotGear(bot, GearManager_Patches.BotFavorites[InventorySlot.GearStandard][botIndex]);
-                PlayerBackpackManager.EquipBotGear(bot, GearManager_Patches.BotFavorites[InventorySlot.GearSpecial][botIndex]);
-                PlayerBackpackManager.EquipBotGear(bot, GearManager_Patches.BotFavorites[InventorySlot.GearClass][botIndex]);
-                PlayerBackpackManager.EquipBotGear(bot, GearManager_Patches.BotFavorites[InventorySlot.HackingTool][botIndex]);
+                PlayerBackpackManager.EquipBotGear(bot, PersistentData.BotFavorites[InventorySlot.GearMelee][botIndex]);
+                PlayerBackpackManager.EquipBotGear(bot, PersistentData.BotFavorites[InventorySlot.GearStandard][botIndex]);
+                PlayerBackpackManager.EquipBotGear(bot, PersistentData.BotFavorites[InventorySlot.GearSpecial][botIndex]);
+                PlayerBackpackManager.EquipBotGear(bot, PersistentData.BotFavorites[InventorySlot.GearClass][botIndex]);
+                PlayerBackpackManager.EquipBotGear(bot, PersistentData.BotFavorites[InventorySlot.HackingTool][botIndex]);
             }
 
             __result = true;
