@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using AssetShards;
 using UnhollowerBaseLib.Attributes;
 using UnityEngine;
 
@@ -11,47 +9,56 @@ namespace GTFO.API.Utilities.Impl
     {
         public ThreadDispatcher_Impl(IntPtr intPtr) : base(intPtr) { }
 
-        static ThreadDispatcher_Impl()
+        public static ThreadDispatcher_Impl Instance
         {
-            AssetShardManager.add_OnStartupAssetsLoaded((Action)OnAssetsLoaded);
-        }
-
-        [HideFromIl2Cpp]
-        private static void OnAssetsLoaded()
-        {
-            if (s_Instance == null)
+            get
             {
-                GameObject dispatcher = new();
-                var dispatcherComp = dispatcher.AddComponent<ThreadDispatcher_Impl>();
-                dispatcher.name = "GTFO-API Thread Dispatcher";
-                dispatcher.hideFlags = HideFlags.HideAndDontSave;
-                GameObject.DontDestroyOnLoad(dispatcher);
-
-                s_Instance = dispatcherComp;
+                if (s_Instance == null)
+                {
+                    ThreadDispatcher_Impl existing = FindObjectOfType<ThreadDispatcher_Impl>();
+                    if (existing != null) s_Instance = existing;
+                }
+                return s_Instance;
             }
         }
 
-        [HideFromIl2Cpp]
-        internal static void Enqueue(Action action)
+        static ThreadDispatcher_Impl()
         {
-            lock (s_LoopQueue)
+            AssetAPI.OnStartupAssetsLoaded += OnAssetsLoaded;
+        }
+
+        private static void OnAssetsLoaded()
+        {
+            if (s_Instance != null) return;
+
+            GameObject dispatcher = new();
+            ThreadDispatcher_Impl dispatcherComp = dispatcher.AddComponent<ThreadDispatcher_Impl>();
+            dispatcher.name = "GTFO-API Thread Dispatcher";
+            dispatcher.hideFlags = HideFlags.HideAndDontSave;
+            GameObject.DontDestroyOnLoad(dispatcher);
+
+            s_Instance = dispatcherComp;
+        }
+
+        [HideFromIl2Cpp]
+        internal void EnqueueAction(Action action)
+        {
+            lock (s_ActionQueue)
             {
-                s_LoopQueue.Enqueue(action);
+                s_ActionQueue.Enqueue(action);
             }
         }
 
         internal void Update()
         {
-            lock (s_LoopQueue)
+            lock (s_ActionQueue)
             {
-                while (s_LoopQueue.Count > 0)
-                {
-                    s_LoopQueue.Dequeue()?.Invoke();
-                }
+                while (s_ActionQueue.Count > 0)
+                    s_ActionQueue.Dequeue()?.Invoke();
             }
         }
 
+        private readonly Queue<Action> s_ActionQueue = new();
         private static ThreadDispatcher_Impl s_Instance = null;
-        private static readonly Queue<Action> s_LoopQueue = new();
     }
 }

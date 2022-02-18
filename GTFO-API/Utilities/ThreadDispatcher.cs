@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using GTFO.API.Utilities.Impl;
 
 namespace GTFO.API.Utilities
 {
     /// <summary>
-    /// Unity Main Thread Dispatcher
+    /// Utility class for dispatching threads on the Unity main thread
     /// </summary>
     public static class ThreadDispatcher
     {
         /// <summary>
-        /// Enqueue Action that want to excute on main unity thread
+        /// Queues an action up to be executed on the next frame
         /// </summary>
-        /// <param name="action">Action to dispatch to main unity thread</param>
-        public static void Enqueue(Action action)
-        {
-            ThreadDispatcher_Impl.Enqueue(action);
-        }
+        /// <param name="action">Action to execute on unity's main thread</param>
+        public static void Dispatch(Action action) => ThreadDispatcher_Impl.Instance.EnqueueAction(action);
     }
 }
