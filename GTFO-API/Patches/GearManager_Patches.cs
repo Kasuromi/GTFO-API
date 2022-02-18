@@ -17,16 +17,16 @@ namespace GTFO.API.Patches
         [HarmonyPostfix]
         public static void Setup_Postfix()
         {
-            BotFavorites = new Dictionary<InventorySlot, string[]>
+            BotFavorites = new()
             {
-                { InventorySlot.GearMelee, new string[4] },
-                { InventorySlot.GearStandard, new string[4] },
-                { InventorySlot.GearSpecial, new string[4] },
-                { InventorySlot.GearClass, new string[4] },
-                { InventorySlot.HackingTool, new string[4] }
+                [InventorySlot.GearMelee] = new string[4],
+                [InventorySlot.GearStandard] = new string[4],
+                [InventorySlot.GearSpecial] = new string[4],
+                [InventorySlot.GearClass] = new string[4],
+                [InventorySlot.HackingTool] = new string[4]
             };
 
-            GearManager.FavoritesData = new GearFavoritesData();
+            GearManager.FavoritesData = new();
         }
 
         [HarmonyPatch(nameof(GearManager.RegisterBotGearInSlotAsEquipped))]
