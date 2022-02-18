@@ -10,7 +10,7 @@ namespace GTFO.API.Patches
         [HarmonyPatch(nameof(PlayerBackpackManager.GiveFavoriteGearToBot))]
         [HarmonyWrapSafe]
         [HarmonyPrefix]
-        public static bool GiveFavoriteGearToBotPrefix(SNet_Player bot, ref bool __result)
+        public static bool GiveFavoriteGearToBot_Prefix(SNet_Player bot, ref bool __result)
         {
             int botIndex = bot.PlayerSlotIndex();
 
