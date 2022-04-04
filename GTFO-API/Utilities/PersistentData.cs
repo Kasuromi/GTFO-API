@@ -1,54 +1,74 @@
 ﻿using System.IO;
 using BepInEx;
 using System.Text.RegularExpressions;
-using GTFO.API.JSON.Settings;
-using GTFO.API.JSON;
 using System.Text.Json;
 using JsonSerializer = GTFO.API.JSON.JsonSerializer;
 
 namespace GTFO.API.Utilities
 {
+    /// <summary>
+    /// Utility class used to easily store configuration and data on disk in JSON format
+    /// </summary>
+    /// <typeparam name="T">The data type to store on disk</typeparam>
     public class PersistentData<T> where T : PersistentData<T>, new()
     {
-        const string versionRegex = @"""PersistentDataVersion"": ""(.+?)""";
+        const string VERSION_REGEX = @"""PersistentDataVersion"": ""(.+?)""";
 
-        protected static T currentData;
+        private static T s_currentData;
 
+        /// <summary>
+        /// The current data instance, loaded automatically when first accessed
+        /// </summary>
         public static T CurrentData
         {
             get
             {
-                if (currentData != null)
+                if (s_currentData != null)
                 {
-                    return currentData;
+                    return s_currentData;
                 }
                 else
                 {
-                    currentData = Load();
-                    return currentData;
+                    s_currentData = Load();
+                    return s_currentData;
                 }
             }
             set
             {
-                currentData = value;
+                s_currentData = value;
             }
         }
 
+        /// <summary>
+        /// The default data path on disk
+        /// </summary>
         protected static string persistentPath
         {
             get
             {
-                return Path.Combine(Paths.PluginPath, typeof(T).Assembly.GetName().Name, $"{typeof(T).Name}.json");
+                return Path.Combine(Paths.PluginPath, "PersistentData", typeof(T).Assembly.GetName().Name, $"{typeof(T).Name}.json");
             }
         }
 
+        /// <summary>
+        /// The version of the stored data
+        /// </summary>
         public virtual string PersistentDataVersion { get; set; } = "1.0.0";
 
+        /// <summary>
+        /// Loads the stored data from the default path and creates default if it didn't exist
+        /// </summary>
+        /// <returns>The stored data or default if it didn't exist</returns>
         public static T Load()
         {
             return Load(persistentPath);
         }
 
+        /// <summary>
+        /// Loads the stored data from the specified path and creates default if it didn't exist
+        /// </summary>
+        /// <param name="path">The path to load from</param>
+        /// <returns>The stored data or default if it didn't exist</returns>
         public static T Load(string path)
         {
             T res = new();
@@ -60,7 +80,7 @@ namespace GTFO.API.Utilities
 
                 try
                 {
-                    deserialized = JsonSerializer.Deserialize<T>(contents, PersistentDataSettings.GetPersistentDataSettings());
+                    deserialized = JsonSerializer.Deserialize<T>(contents);
                 }
                 catch (JsonException)
                 {                    
@@ -68,7 +88,7 @@ namespace GTFO.API.Utilities
 
                     string version = "FAILED";
 
-                    Match match = Regex.Match(contents, versionRegex);
+                    Match match = Regex.Match(contents, VERSION_REGEX);
                     if (match.Success)
                     {
                         version = $"{match.Groups[1].Value}-FAILED";
@@ -95,14 +115,21 @@ namespace GTFO.API.Utilities
             return res;
         }
 
+        /// <summary>
+        /// Saves this data to the default path
+        /// </summary>
         public void Save()
         {
             Save(persistentPath);
         }
 
+        /// <summary>
+        /// Saves this data to the specified path
+        /// </summary>
+        /// <param name="path">The path to save to</param>
         public void Save(string path)
         {
-            string contents = JsonSerializer.Serialize((T)this, PersistentDataSettings.GetPersistentDataSettings());
+            string contents = JsonSerializer.Serialize((T)this);
             string directory = Path.GetDirectoryName(path);
 
             if (!Directory.Exists(directory))
