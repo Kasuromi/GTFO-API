@@ -3,7 +3,7 @@ using Player;
 
 namespace GTFO.API.Resources
 {
-    internal static class PersistentData
+    internal static class RuntimeData
     {
         public static Dictionary<InventorySlot, string[]> BotFavorites;
     }
