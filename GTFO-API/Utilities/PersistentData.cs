@@ -1,8 +1,10 @@
 ﻿using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using BepInEx;
 using System.Text.RegularExpressions;
+using GTFO.API.JSON.Settings;
+using GTFO.API.JSON;
+using System.Text.Json;
+using JsonSerializer = GTFO.API.JSON.JsonSerializer;
 
 namespace GTFO.API.Utilities
 {
@@ -53,7 +55,7 @@ namespace GTFO.API.Utilities
 
             if (File.Exists(path))
             {
-                var contents = File.ReadAllText(path);
+                string contents = File.ReadAllText(path);
                 T deserialized;
 
                 try
@@ -61,12 +63,12 @@ namespace GTFO.API.Utilities
                     deserialized = JsonSerializer.Deserialize<T>(contents, PersistentDataSettings.GetPersistentDataSettings());
                 }
                 catch (JsonException)
-                {
+                {                    
                     APILogger.Warn("JSON", $"Failed to deserialize {typeof(T).Name}, replacing with default");
 
-                    var version = "FAILED";
+                    string version = "FAILED";
 
-                    var match = Regex.Match(contents, versionRegex);
+                    Match match = Regex.Match(contents, versionRegex);
                     if (match.Success)
                     {
                         version = $"{match.Groups[1].Value}-FAILED";
@@ -100,35 +102,13 @@ namespace GTFO.API.Utilities
 
         public void Save(string path)
         {
-            var contents = JsonSerializer.Serialize((T)this, PersistentDataSettings.GetPersistentDataSettings());
+            string contents = JsonSerializer.Serialize((T)this, PersistentDataSettings.GetPersistentDataSettings());
+            string directory = Path.GetDirectoryName(path);
 
-            if (!File.Exists(path))
-                Directory.CreateDirectory(new FileInfo(path).Directory.FullName);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
 
             File.WriteAllText(path, contents);
-        }
-    }
-
-    public static class PersistentDataSettings
-    {
-        private static JsonSerializerOptions persistentDataSettings;
-
-        public static JsonSerializerOptions GetPersistentDataSettings()
-        {
-            if (persistentDataSettings == null)
-            {
-                persistentDataSettings = new()
-                {
-                    ReadCommentHandling = JsonCommentHandling.Skip,
-                    IncludeFields = false,
-                    PropertyNameCaseInsensitive = true,
-                    WriteIndented = true,
-                    IgnoreReadOnlyProperties = true
-                };
-                persistentDataSettings.Converters.Add(new JsonStringEnumConverter());
-            }
-
-            return persistentDataSettings;
         }
     }
 }
