@@ -13,7 +13,7 @@ namespace GTFO.API.JSON
     /// </summary>
     public static class JsonSerializer
     {
-        private static JsonSerializerOptions s_defaultSerializerSettings;
+        private static JsonSerializerOptions s_DefaultSerializerSettings;
 
         /// <summary>
         /// Obtains the serialization options used by PersistentData
@@ -23,9 +23,9 @@ namespace GTFO.API.JSON
         {
             get
             {
-                if (s_defaultSerializerSettings == null)
+                if (s_DefaultSerializerSettings == null)
                 {
-                    s_defaultSerializerSettings = new()
+                    s_DefaultSerializerSettings = new()
                     {
                         ReadCommentHandling = JsonCommentHandling.Skip,
                         IncludeFields = false,
@@ -33,13 +33,13 @@ namespace GTFO.API.JSON
                         WriteIndented = true,
                         IgnoreReadOnlyProperties = true
                     };
-                    s_defaultSerializerSettings.Converters.Add(new JsonStringEnumConverter());
-                    s_defaultSerializerSettings.Converters.Add(new Vector2Converter());
-                    s_defaultSerializerSettings.Converters.Add(new Vector3Converter());
-                    s_defaultSerializerSettings.Converters.Add(new ColorConverter());
+                    s_DefaultSerializerSettings.Converters.Add(new JsonStringEnumConverter());
+                    s_DefaultSerializerSettings.Converters.Add(new Vector2Converter());
+                    s_DefaultSerializerSettings.Converters.Add(new Vector3Converter());
+                    s_DefaultSerializerSettings.Converters.Add(new ColorConverter());
                 }
 
-                return s_defaultSerializerSettings;
+                return s_DefaultSerializerSettings;
             }
         }
 
@@ -58,12 +58,12 @@ namespace GTFO.API.JSON
         }
 
         /// <summary>
-        /// Parses the text representing a single JSON value into an instance of the type specified by a generic type parameter.
+        /// Parses the JSON text into an instance type of <typeparamref name="T"/>
         /// </summary>
         /// <typeparam name="T">The target type of the JSON value.</typeparam>
         /// <param name="json">The JSON text to parse.</param>
         /// <param name="options">Options to control the behavior during parsing.</param>
-        /// <returns></returns>
+        /// <returns><typeparamref name="T"/> with deserialized JSON data</returns>
         public static T Deserialize<T>(string json, JsonSerializerOptions options = null)
         {
             if (options == null)

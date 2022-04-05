@@ -12,9 +12,9 @@ namespace GTFO.API.Utilities
     /// <typeparam name="T">The data type to store on disk</typeparam>
     public class PersistentData<T> where T : PersistentData<T>, new()
     {
-        const string VERSION_REGEX = @"""PersistentDataVersion"": ""(.+?)""";
+        private const string VERSION_REGEX = @"""PersistentDataVersion"": ""(.+?)""";
 
-        private static T s_currentData;
+        private static T s_CurrentData;
 
         /// <summary>
         /// The current data instance, loaded automatically when first accessed
@@ -23,19 +23,19 @@ namespace GTFO.API.Utilities
         {
             get
             {
-                if (s_currentData != null)
+                if (s_CurrentData != null)
                 {
-                    return s_currentData;
+                    return s_CurrentData;
                 }
                 else
                 {
-                    s_currentData = Load();
-                    return s_currentData;
+                    s_CurrentData = Load();
+                    return s_CurrentData;
                 }
             }
             set
             {
-                s_currentData = value;
+                s_CurrentData = value;
             }
         }
 

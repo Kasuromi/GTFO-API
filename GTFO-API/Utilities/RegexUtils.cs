@@ -11,7 +11,7 @@ namespace GTFO.API.Utilities
     /// </summary>
     public static class RegexUtils
     {
-        private static readonly Regex _vectorRegex = new("-?[0-9.]+");
+        private static readonly Regex s_VectorRegex = new("-?[0-9.]+");
 
         /// <summary>
         /// Tries to parse an array of floats from json
@@ -23,7 +23,7 @@ namespace GTFO.API.Utilities
         {
             try
             {
-                var matches = _vectorRegex.Matches(input);
+                var matches = s_VectorRegex.Matches(input);
                 var count = matches.Count;
                 if (count < 1)
                     throw new Exception();
