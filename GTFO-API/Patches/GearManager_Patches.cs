@@ -13,7 +13,7 @@ namespace GTFO.API.Patches
         [HarmonyPostfix]
         public static void Setup_Postfix()
         {
-            PersistentData.BotFavorites = new()
+            RuntimeData.BotFavorites = new()
             {
                 [InventorySlot.GearMelee] = new string[4],
                 [InventorySlot.GearStandard] = new string[4],
@@ -30,7 +30,7 @@ namespace GTFO.API.Patches
         [HarmonyPrefix]
         public static bool RegisterBotGearInSlotAsEquipped_Prefix(GearIDRange idRange, InventorySlot slot, int slotIndex)
         {
-            PersistentData.BotFavorites[slot][slotIndex] = idRange.ToJSON();
+            RuntimeData.BotFavorites[slot][slotIndex] = idRange.ToJSON();
             return false;
         }
 
