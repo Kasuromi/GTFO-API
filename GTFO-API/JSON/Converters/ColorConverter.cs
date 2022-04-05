@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using GTFO.API.Utilities;
@@ -21,7 +19,7 @@ namespace GTFO.API.JSON.Converters
 
         public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var color = new Color();
+            Color color = new Color();
             float multiplier = 1.0f;
 
             switch (reader.TokenType)
@@ -36,7 +34,7 @@ namespace GTFO.API.JSON.Converters
                         if (reader.TokenType != JsonTokenType.PropertyName)
                             throw new JsonException("Expected PropertyName token");
 
-                        var propName = reader.GetString();
+                        string propName = reader.GetString();
                         reader.Read();
 
                         switch (propName.ToLowerInvariant())
@@ -65,8 +63,8 @@ namespace GTFO.API.JSON.Converters
                     throw new JsonException("Expected EndObject token");
 
                 case JsonTokenType.String:
-                    var strValue = reader.GetString().Trim();
-                    var strValues = strValue.Split("*");
+                    string strValue = reader.GetString().Trim();
+                    string[] strValues = strValue.Split("*");
                     string formatString;
 
                     switch (strValues.Length)
@@ -103,7 +101,7 @@ namespace GTFO.API.JSON.Converters
 
         private static bool TryParseColor(string input, out Color color)
         {
-            if (!RegexUtils.TryParseVectorString(input, out var array))
+            if (!RegexUtils.TryParseVectorString(input, out float[] array))
             {
                 color = Color.white;
                 return false;

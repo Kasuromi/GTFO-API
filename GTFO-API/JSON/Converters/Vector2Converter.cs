@@ -11,7 +11,7 @@ namespace GTFO.API.JSON.Converters
     {
         public override Vector2 Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var vector = new Vector2();
+            Vector2 vector = new Vector2();
 
             switch (reader.TokenType)
             {
@@ -24,7 +24,7 @@ namespace GTFO.API.JSON.Converters
                         if (reader.TokenType != JsonTokenType.PropertyName)
                             throw new JsonException("Expected PropertyName token");
 
-                        var propName = reader.GetString();
+                        string propName = reader.GetString();
                         reader.Read();
 
                         switch (propName.ToLowerInvariant())
@@ -41,7 +41,7 @@ namespace GTFO.API.JSON.Converters
                     throw new JsonException("Expected EndObject token");
 
                 case JsonTokenType.String:
-                    var strValue = reader.GetString().Trim();
+                    string strValue = reader.GetString().Trim();
                     if (TryParseVector2(strValue, out vector))
                     {
                         return vector;
@@ -55,7 +55,7 @@ namespace GTFO.API.JSON.Converters
 
         private static bool TryParseVector2(string input, out Vector2 vector)
         {
-            if (!RegexUtils.TryParseVectorString(input, out var array))
+            if (!RegexUtils.TryParseVectorString(input, out float[] array))
             {
                 vector = Vector2.zero;
                 return false;

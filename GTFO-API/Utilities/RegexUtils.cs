@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace GTFO.API.Utilities
@@ -23,8 +21,8 @@ namespace GTFO.API.Utilities
         {
             try
             {
-                var matches = s_VectorRegex.Matches(input);
-                var count = matches.Count;
+                MatchCollection matches = s_VectorRegex.Matches(input);
+                int count = matches.Count;
                 if (count < 1)
                     throw new Exception();
 
@@ -32,7 +30,7 @@ namespace GTFO.API.Utilities
 
                 for (int i = 0; i < count; i++)
                 {
-                    var match = matches[i];
+                    Match match = matches[i];
                     vectorArray[i] = float.Parse(match.Value, CultureInfo.InvariantCulture);
                 }
 
