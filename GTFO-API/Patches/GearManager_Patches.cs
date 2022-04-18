@@ -29,7 +29,7 @@ namespace GTFO.API.Patches
             if (m_PatchApplied)
                 return;
 
-            Directory.CreateDirectory(FavoritePath); //Create Favorite Subdir
+            Directory.CreateDirectory(Path.Combine(Paths.ConfigPath, "Favorite")); //Create Favorite Subdir
 
             var readMethod = nameof(CellJSON.ReadFromDisk);
             var saveMethod = nameof(CellJSON.SaveToDisk);
