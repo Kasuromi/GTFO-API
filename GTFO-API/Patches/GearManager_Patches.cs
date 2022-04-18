@@ -8,7 +8,6 @@ using Gear;
 using HarmonyLib;
 using UnhollowerBaseLib;
 using UnhollowerBaseLib.Runtime;
-using UnhollowerRuntimeLib;
 
 namespace GTFO.API.Patches
 {
