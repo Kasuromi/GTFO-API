@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.IL2CPP;
 using GTFO.API.Impl;
+using GTFO.API.Patches;
 using GTFO.API.Patches.Native;
 using GTFO.API.Utilities.Impl;
 using GTFO.API.Wrappers;
