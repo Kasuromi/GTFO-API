@@ -6,7 +6,7 @@ namespace GTFO.API.Patches.Native
 {
     internal class SyringeFirstPerson_Patch : NativePatch<SyringeFirstPerson_Patch.SyringeUsedDelegate>
     {
-        public override unsafe void* MethodPtr => Il2CppAPI.GetIl2CppMethod<SyringeFirstPerson._ApplySyringe_d__18>("MoveNext", "System.Boolean");
+        public override unsafe void* MethodPtr => Il2CppAPI.GetIl2CppMethod<SyringeFirstPerson._ApplySyringe_d__18>("MoveNext", "System.Boolean", false);
         public override string JmpStartSig => "\xC6\x81\xB4\x00\x00\x00\x01\x8B\x87\xD0\x01\x00\x00\x85\xC0";
         public override string JmpStartMask => "xxxxxxxxxxxxxxx";
 

@@ -74,26 +74,26 @@ namespace GTFO.API.Wrappers
         public override unsafe Item GetItem()
             => new((IntPtr)GetItemBase(Pointer.ToPointer()));
 
-        private static readonly Item__Get_pItemData Get_pItemDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Get_pItemData>("Get_pItemData", "Player.pItemData");
-        private static readonly Item__Set_pItemData Set_pItemDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Set_pItemData>("Set_pItemData", "System.Void", "Player.pItemData");
-        private static readonly Item__GetCustomData GetCustomDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetCustomData>("GetCustomData", "Player.pItemData_Custom");
-        private static readonly Item__SetCustomData SetCustomDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SetCustomData>("SetCustomData", "System.Void", "Player.pItemData_Custom", "System.Boolean");
-        private static readonly Item__OnCustomDataUpdated OnCustomDataUpdatedBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnCustomDataUpdated>("OnCustomDataUpdated", "System.Void", "Player.pItemData_Custom");
-        private static readonly Item__Awake AwakeBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Awake>("Awake", "System.Void");
-        private static readonly Item__OnDespawn OnDespawnBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnDespawn>("OnDespawn", "System.Void");
-        private static readonly Item__Setup SetupBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Setup>("Setup", "System.Void", "GameData.ItemDataBlock");
-        private static readonly Item__OnGearSpawnComplete OnGearSpawnCompleteBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnGearSpawnComplete>("OnGearSpawnComplete", "System.Void");
-        private static readonly Item__OnPickUp OnPickUpBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnPickUp>("OnPickUp", "System.Void", "Player.PlayerAgent");
-        private static readonly Item__SetupBaseModel SetupBaseModelBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SetupBaseModel>("SetupBaseModel", "System.Void", "ItemSetup.ItemModelSetup");
-        private static readonly Item__SyncedTurnOn SyncedTurnOnBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTurnOn>("SyncedTurnOn", "System.Void", "Player.PlayerAgent", "AIGraph.AIG_CourseNode");
-        private static readonly Item__SyncedTurnOff SyncedTurnOffBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTurnOff>("SyncedTurnOff", "System.Void", "Player.PlayerAgent");
-        private static readonly Item__SyncedTrigger SyncedTriggerBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTrigger>("SyncedTrigger", "System.Void", "Player.PlayerAgent");
-        private static readonly Item__SyncedTriggerSecondary SyncedTriggerSecondaryBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTriggerSecondary>("SyncedTriggerSecondary", "System.Void", "Player.PlayerAgent");
-        private static readonly Item__SyncedThrow SyncedThrowBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedThrow>("SyncedThrow", "System.Void", "Player.PlayerAgent");
-        private static readonly Item__SyncedPickup SyncedPickupBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedPickup>("SyncedPickup", "System.Void", "Player.PlayerAgent");
-        private static readonly Item__SyncedSetKeyValue SyncedSetKeyValueBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedSetKeyValue>("SyncedSetKeyValue", "System.Void", "System.Int32", "System.Single");
-        private static readonly Item__GetPickupInteraction GetPickupInteractionBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetPickupInteraction>("GetPickupInteraction", "Interact_Base");
-        private static readonly Item__GetItem GetItemBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetItem>("GetItem", "Item");
+        private static readonly Item__Get_pItemData Get_pItemDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Get_pItemData>("Get_pItemData", "Player.pItemData", false);
+        private static readonly Item__Set_pItemData Set_pItemDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Set_pItemData>("Set_pItemData", "System.Void", false, "Player.pItemData");
+        private static readonly Item__GetCustomData GetCustomDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetCustomData>("GetCustomData", "Player.pItemData_Custom", false);
+        private static readonly Item__SetCustomData SetCustomDataBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SetCustomData>("SetCustomData", "System.Void", false, "Player.pItemData_Custom", "System.Boolean");
+        private static readonly Item__OnCustomDataUpdated OnCustomDataUpdatedBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnCustomDataUpdated>("OnCustomDataUpdated", "System.Void", false, "Player.pItemData_Custom");
+        private static readonly Item__Awake AwakeBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Awake>("Awake", "System.Void", false);
+        private static readonly Item__OnDespawn OnDespawnBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnDespawn>("OnDespawn", "System.Void", false);
+        private static readonly Item__Setup SetupBase = Il2CppAPI.GetIl2CppMethod<Item, Item__Setup>("Setup", "System.Void", false, "GameData.ItemDataBlock");
+        private static readonly Item__OnGearSpawnComplete OnGearSpawnCompleteBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnGearSpawnComplete>("OnGearSpawnComplete", "System.Void", false);
+        private static readonly Item__OnPickUp OnPickUpBase = Il2CppAPI.GetIl2CppMethod<Item, Item__OnPickUp>("OnPickUp", "System.Void", false, "Player.PlayerAgent");
+        private static readonly Item__SetupBaseModel SetupBaseModelBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SetupBaseModel>("SetupBaseModel", "System.Void", false, "ItemSetup.ItemModelSetup");
+        private static readonly Item__SyncedTurnOn SyncedTurnOnBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTurnOn>("SyncedTurnOn", "System.Void", false, "Player.PlayerAgent", "AIGraph.AIG_CourseNode");
+        private static readonly Item__SyncedTurnOff SyncedTurnOffBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTurnOff>("SyncedTurnOff", "System.Void", false, "Player.PlayerAgent");
+        private static readonly Item__SyncedTrigger SyncedTriggerBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTrigger>("SyncedTrigger", "System.Void", false, "Player.PlayerAgent");
+        private static readonly Item__SyncedTriggerSecondary SyncedTriggerSecondaryBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedTriggerSecondary>("SyncedTriggerSecondary", "System.Void", false, "Player.PlayerAgent");
+        private static readonly Item__SyncedThrow SyncedThrowBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedThrow>("SyncedThrow", "System.Void", false, "Player.PlayerAgent");
+        private static readonly Item__SyncedPickup SyncedPickupBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedPickup>("SyncedPickup", "System.Void", false, "Player.PlayerAgent");
+        private static readonly Item__SyncedSetKeyValue SyncedSetKeyValueBase = Il2CppAPI.GetIl2CppMethod<Item, Item__SyncedSetKeyValue>("SyncedSetKeyValue", "System.Void", false, "System.Int32", "System.Single");
+        private static readonly Item__GetPickupInteraction GetPickupInteractionBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetPickupInteraction>("GetPickupInteraction", "Interact_Base", false);
+        private static readonly Item__GetItem GetItemBase = Il2CppAPI.GetIl2CppMethod<Item, Item__GetItem>("GetItem", "Item", false);
     }
 #pragma warning restore CS1591
 }
