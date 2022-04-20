@@ -1,45 +1,86 @@
-﻿using Gear;
-using GTFO.API.Resources;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using BepInEx;
+using BepInEx.IL2CPP.Hook;
+using Gear;
 using HarmonyLib;
-using Player;
+using UnhollowerBaseLib;
+using UnhollowerBaseLib.Runtime;
 
 namespace GTFO.API.Patches
 {
     [HarmonyPatch(typeof(GearManager))]
-    internal class GearManager_Patches
+    internal static class GearManager_Patches
     {
+        private static string FavoritesDirectory => Path.Combine(Paths.ConfigPath, "Favorites");
+        private static string FavoritePath => Path.Combine(FavoritesDirectory, "Gear.json");
+        private static string BotFavoritePath => Path.Combine(FavoritesDirectory, "BotGear.json");
+
+        private static bool m_PatchApplied = false;
+
         [HarmonyPatch(nameof(GearManager.Setup))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]
-        public static void Setup_Postfix()
+        private static unsafe void Setup_Prefix()
         {
-            RuntimeData.BotFavorites = new()
+            if (m_PatchApplied)
+                return;
+
+            if (!Directory.Exists(FavoritesDirectory))
+                Directory.CreateDirectory(FavoritesDirectory);
+
+            var readMethod = nameof(CellJSON.ReadFromDisk);
+            var saveMethod = nameof(CellJSON.SaveToDisk);
+
+            APILogger.Verbose(nameof(GearManager_Patches), "Applying ReadFromDisk Patch");
+            Il2CppAPI.CreateGenericDetour<CellJSON, ReadFromDiskDelegate>(readMethod, "T", new[]
             {
-                [InventorySlot.GearMelee] = new string[4],
-                [InventorySlot.GearStandard] = new string[4],
-                [InventorySlot.GearSpecial] = new string[4],
-                [InventorySlot.GearClass] = new string[4],
-                [InventorySlot.HackingTool] = new string[4]
-            };
+                typeof(string).FullName,
+                typeof(bool).MakeByRefType().FullName
+            }, new[] { typeof(GearFavoritesData) }, Patch_ReadFromDisk, out m_ReadFromDiskOriginal);
 
-            GearManager.FavoritesData = new();
+            APILogger.Verbose(nameof(GearManager_Patches), "Applying SaveToDisk Patch");
+            Il2CppAPI.CreateGenericDetour<CellJSON, SaveToDiskDelegate>(saveMethod, typeof(void).FullName, new string[]
+            {
+                typeof(string).FullName,
+                "T"
+            }, new[] { typeof(GearFavoritesData) }, Patch_SaveToDisk, out m_SaveToDiskOriginal);
+
+            m_PatchApplied = true;
         }
 
-        [HarmonyPatch(nameof(GearManager.RegisterBotGearInSlotAsEquipped))]
-        [HarmonyWrapSafe]
-        [HarmonyPrefix]
-        public static bool RegisterBotGearInSlotAsEquipped_Prefix(GearIDRange idRange, InventorySlot slot, int slotIndex)
+        private static ReadFromDiskDelegate m_ReadFromDiskOriginal;
+        private unsafe delegate IntPtr ReadFromDiskDelegate(IntPtr path, byte* createNew, Il2CppMethodInfo* methodInfo);
+        private static unsafe IntPtr Patch_ReadFromDisk(IntPtr path, byte* createNew, Il2CppMethodInfo* methodInfo)
         {
-            RuntimeData.BotFavorites[slot][slotIndex] = idRange.ToJSON();
-            return false;
+            string pathStr = new Il2CppSystem.String(path);
+
+            if (pathStr.EndsWith("GTFO_Favorites.txt", StringComparison.OrdinalIgnoreCase))
+                return m_ReadFromDiskOriginal(IL2CPP.ManagedStringToIl2Cpp(FavoritePath), createNew, methodInfo);
+            else if (pathStr.EndsWith("GTFO_BotFavorites.txt", StringComparison.OrdinalIgnoreCase))
+                return m_ReadFromDiskOriginal(IL2CPP.ManagedStringToIl2Cpp(BotFavoritePath), createNew, methodInfo);
+            else
+                return m_ReadFromDiskOriginal(path, createNew, methodInfo);
         }
 
-        [HarmonyPatch(nameof(GearManager.SaveFavoritesData))]
-        [HarmonyWrapSafe]
-        [HarmonyPrefix]
-        public static bool SaveFavoritesData_Prefix()
+        private static SaveToDiskDelegate m_SaveToDiskOriginal;
+        private unsafe delegate void SaveToDiskDelegate(IntPtr path, IntPtr obj, Il2CppMethodInfo* methodInfo);
+        private static unsafe void Patch_SaveToDisk(IntPtr path, IntPtr favData, Il2CppMethodInfo* methodInfo)
         {
-            return false;
+            string pathStr = new Il2CppSystem.String(path);
+
+            if (pathStr.EndsWith("GTFO_Favorites.txt", StringComparison.OrdinalIgnoreCase))
+                m_SaveToDiskOriginal(IL2CPP.ManagedStringToIl2Cpp(FavoritePath), favData, methodInfo);
+            else if (pathStr.EndsWith("GTFO_BotFavorites.txt", StringComparison.OrdinalIgnoreCase))
+            {
+                m_SaveToDiskOriginal(IL2CPP.ManagedStringToIl2Cpp(BotFavoritePath), favData, methodInfo);
+                if (File.Exists(pathStr))
+                    File.Delete(pathStr); //Remove Existing BotFavorite File
+            }
+            else
+                m_SaveToDiskOriginal(path, favData, methodInfo);
         }
     }
 }
