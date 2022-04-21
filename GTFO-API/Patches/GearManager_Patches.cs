@@ -22,7 +22,7 @@ namespace GTFO.API.Patches
 
         [HarmonyPatch(nameof(GearManager.Setup))]
         [HarmonyWrapSafe]
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         private static unsafe void Setup_Prefix()
         {
             if (m_PatchApplied)
