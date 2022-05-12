@@ -1,4 +1,6 @@
-﻿using GameData;
+﻿using System;
+using AssetShards;
+using GameData;
 using GTFO.API.Impl;
 using GTFO.API.Resources;
 using HarmonyLib;

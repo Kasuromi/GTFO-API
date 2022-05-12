@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 using BepInEx.IL2CPP.Hook;
 using GTFO.API.Attributes;
 using GTFO.API.Resources;
-using UnhollowerBaseLib;
-using UnhollowerBaseLib.Runtime;
-using UnhollowerBaseLib.Runtime.VersionSpecific.Class;
-using UnhollowerBaseLib.Runtime.VersionSpecific.MethodInfo;
-using UnhollowerRuntimeLib;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.Injection;
+using Il2CppInterop.Runtime.Runtime;
+using Il2CppInterop.Runtime.Runtime.VersionSpecific.Class;
+using Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo;
 
 namespace GTFO.API
 {
@@ -92,7 +92,7 @@ namespace GTFO.API
         }
 
         /// <summary>
-        /// Creates (and applies) a FastNativeDetour to a generic il2cpp method
+        /// Creates (and applies) a detour to a generic il2cpp method
         /// </summary>
         /// <typeparam name="TClass">Il2Cpp class that contains the generic method</typeparam>
         /// <typeparam name="TDelegate">Delegate of the method</typeparam>
@@ -102,9 +102,9 @@ namespace GTFO.API
         /// <param name="genericArguments">List of generic arguments for the il2cpp class</param>
         /// <param name="to">The method to detour to</param>
         /// <param name="original">Delegate to the original function</param>
-        /// <returns>The applied FastNativeDetour</returns>
+        /// <returns>The applied detour</returns>
         /// <exception cref="ArgumentException">The il2cpp class is not registered in il2cpp</exception>
-        public static unsafe FastNativeDetour CreateGenericDetour<TClass, TDelegate>(string methodName, string returnType, string[] paramTypes, Type[] genericArguments, TDelegate to, out TDelegate original)
+        public static unsafe INativeDetour CreateGenericDetour<TClass, TDelegate>(string methodName, string returnType, string[] paramTypes, Type[] genericArguments, TDelegate to, out TDelegate original)
             where TClass : Il2CppSystem.Object
             where TDelegate : Delegate
         {
@@ -117,7 +117,7 @@ namespace GTFO.API
 
             INativeMethodInfoStruct il2cppMethodInfo = UnityVersionHandler.Wrap((Il2CppMethodInfo*)IL2CPP.il2cpp_method_get_from_reflection(genericMethodInfo.Pointer));
 
-            return FastNativeDetour.CreateAndApply(il2cppMethodInfo.MethodPointer, to, out original);
+            return NativeDetourHelper.CreateAndApply(il2cppMethodInfo.MethodPointer, to, out original);
         }
 
         private static IEnumerable<TAttribute> GetCustomAttributesInType<T, TAttribute>() where TAttribute : Attribute

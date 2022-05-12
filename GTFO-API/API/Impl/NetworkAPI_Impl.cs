@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using GTFO.API.Resources;
-using UnhollowerBaseLib.Attributes;
+using Il2CppInterop.Runtime.Attributes;
 using UnityEngine;
 
 namespace GTFO.API.Impl

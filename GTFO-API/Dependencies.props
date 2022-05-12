@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <BIELibsFolder>$(GameFolder)\BepInEx\core</BIELibsFolder>
-    <MonoLibsFolder>$(GameFolder)\mono\Managed</MonoLibsFolder>
+    <CorLibsFolder>$(GameFolder)\dotnet\corlib</CorLibsFolder>
     <UnhollowedLibsFolder>$(GameFolder)\BepInEx\unhollowed</UnhollowedLibsFolder>
     <PluginsFolder>$(GameFolder)\BepInEx\plugins</PluginsFolder>
   </PropertyGroup>
@@ -22,13 +22,10 @@
     <!-- BepInEx -->
     <Reference Include="$(BIELibsFolder)\BepInEx.*.dll" Private="false" />
     <Reference Include="$(BIELibsFolder)\0Harmony.dll" Private="false" />
-    <Reference Include="$(BIELibsFolder)\UnhollowerBaseLib.dll" Private="false" />
-    <Reference Include="$(BIELibsFolder)\UnhollowerRuntimeLib.dll" Private="false" />
+    <Reference Include="$(BIELibsFolder)\Il2CppInterop.Runtime.dll" Private="false" />
 
-    <!-- Mono -->
-    <Reference Include="$(MonoLibsFolder)\Microsoft.Bcl.AsyncInterfaces.dll" Private="false" />
-    <Reference Include="$(MonoLibsFolder)\System.Text.Json.dll" Private="false" />
-    <Reference Include="$(MonoLibsFolder)\System.Runtime.CompilerServices.Unsafe.dll" Private="false" />
+    <!-- CoreCLR -->
+    <Reference Include="$(CorLibsFolder)\*.dll" Private="false" />
 
     <!-- Unhollowed -->
     <Reference Include="$(UnhollowedLibsFolder)/*.dll" Private="false" />

@@ -3,8 +3,8 @@ using System.Text;
 using GTFO.API.Impl;
 using GTFO.API.Resources;
 using HarmonyLib;
+using Il2CppInterop.Runtime;
 using SNetwork;
-using UnhollowerBaseLib;
 
 namespace GTFO.API.Patches
 {
