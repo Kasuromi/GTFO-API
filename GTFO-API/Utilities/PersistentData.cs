@@ -5,6 +5,7 @@ using System.Text.Json;
 using JsonSerializer = GTFO.API.JSON.JsonSerializer;
 using System.Reflection;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace GTFO.API.Utilities
 {
@@ -89,6 +90,12 @@ namespace GTFO.API.Utilities
         public virtual string PersistentDataVersion { get; set; } = "1.0.0";
 
         /// <summary>
+        /// Set to true if a JSON exception occurred when deserializing a loaded file
+        /// </summary>
+        [JsonIgnore]
+        public bool LoadingFailed { get; private set; }
+
+        /// <summary>
         /// Loads the stored data from the default path and creates default if it didn't exist
         /// </summary>
         /// <returns>The stored data or default if it didn't exist</returns>
@@ -139,6 +146,7 @@ namespace GTFO.API.Utilities
                 {
                     APILogger.Error("JSON", $"Failed to deserialize {typeof(T).Name}\n{exception}");
 
+                    res.LoadingFailed = true;
                     return res;
                 }
 
