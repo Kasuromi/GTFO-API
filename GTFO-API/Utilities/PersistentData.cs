@@ -3,6 +3,8 @@ using BepInEx;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using JsonSerializer = GTFO.API.JSON.JsonSerializer;
+using System.Reflection;
+using System.Linq;
 
 namespace GTFO.API.Utilities
 {
@@ -40,14 +42,45 @@ namespace GTFO.API.Utilities
         }
 
         /// <summary>
-        /// The default data path on disk
+        /// The default data path on disk. Relative paths will be interpreted as a pattern to match in plugins.
         /// </summary>
         protected static string persistentPath
         {
             get
             {
-                return Path.Combine(Paths.PluginPath, "PersistentData", typeof(T).Assembly.GetName().Name, $"{typeof(T).Name}.json");
+                return Path.Combine("PersistentData", typeof(T).Assembly.GetName().Name, $"{typeof(T).Name}.json");
             }
+        }
+
+        private static readonly string s_fullPath = GetFullPath();
+
+        private static string GetFullPath()
+        {
+            string TPersistentPath = persistentPath;
+            PropertyInfo TPersistentPathProperty = typeof(T).GetProperty(nameof(persistentPath), BindingFlags.Static | BindingFlags.NonPublic);
+
+            if (TPersistentPathProperty != null)
+            {
+                TPersistentPath = (string)TPersistentPathProperty.GetValue(null, null);
+            }
+
+            if (Path.IsPathFullyQualified(TPersistentPath))
+            {
+                return TPersistentPath;
+            }
+
+            string fileName = Path.GetFileName(TPersistentPath);
+            string[] files = Directory.GetFiles(Paths.PluginPath, fileName, SearchOption.AllDirectories);
+
+            string result = files.FirstOrDefault(f => f.EndsWith(TPersistentPath));
+
+            if (string.IsNullOrEmpty(result))
+            {
+                APILogger.Verbose("JSON", $"Couldn't find existing data for {typeof(T).Name}");
+                return Path.Combine(Paths.PluginPath, TPersistentPath);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -61,7 +94,7 @@ namespace GTFO.API.Utilities
         /// <returns>The stored data or default if it didn't exist</returns>
         public static T Load()
         {
-            return Load(persistentPath);
+            return Load(s_fullPath);
         }
 
         /// <summary>
@@ -71,6 +104,8 @@ namespace GTFO.API.Utilities
         /// <returns>The stored data or default if it didn't exist</returns>
         public static T Load(string path)
         {
+            APILogger.Verbose($"JSON", $"Loading {typeof(T).Name} from {path}");
+
             T res = new();
 
             if (File.Exists(path))
@@ -83,7 +118,7 @@ namespace GTFO.API.Utilities
                     deserialized = JsonSerializer.Deserialize<T>(contents);
                 }
                 catch (JsonException)
-                {                    
+                {
                     APILogger.Warn("JSON", $"Failed to deserialize {typeof(T).Name}, replacing with default");
 
                     string version = "FAILED";
@@ -120,7 +155,7 @@ namespace GTFO.API.Utilities
         /// </summary>
         public void Save()
         {
-            Save(persistentPath);
+            Save(s_fullPath);
         }
 
         /// <summary>
