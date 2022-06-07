@@ -111,36 +111,38 @@ namespace GTFO.API.Utilities
             if (File.Exists(path))
             {
                 string contents = File.ReadAllText(path);
+
+                string version = "1.0.0";
+
+                Match match = Regex.Match(contents, VERSION_REGEX);
+                if (match.Success)
+                {
+                    version = $"{match.Groups[1].Value}";
+                }
+
+                if (version != res.PersistentDataVersion)
+                {
+                    APILogger.Warn("JSON", $"{typeof(T).Name} PersistentDataVersion mismatch: expected {res.PersistentDataVersion}, got {version}");
+
+                    File.WriteAllText($"{Path.ChangeExtension(path, null)}-{version}.json", contents);
+                    res.Save(path);
+                    return res;
+                }
+
                 T deserialized;
 
                 try
                 {
                     deserialized = JsonSerializer.Deserialize<T>(contents);
                 }
-                catch (JsonException)
+                catch (JsonException exception)
                 {
-                    APILogger.Warn("JSON", $"Failed to deserialize {typeof(T).Name}, replacing with default");
+                    APILogger.Error("JSON", $"Failed to deserialize {typeof(T).Name}\n{exception}");
 
-                    string version = "FAILED";
-
-                    Match match = Regex.Match(contents, VERSION_REGEX);
-                    if (match.Success)
-                    {
-                        version = $"{match.Groups[1].Value}-FAILED";
-                    }
-
-                    File.WriteAllText($"{Path.ChangeExtension(path, null)}-{version}.json", contents);
-                    deserialized = new();
-                    deserialized.Save(path);
+                    return res;
                 }
 
-                if (deserialized.PersistentDataVersion != res.PersistentDataVersion)
-                {
-                    deserialized.Save($"{Path.ChangeExtension(path, null)}-{deserialized.PersistentDataVersion}.json");
-                    res.Save(path);
-                }
-                else
-                    res = deserialized;
+                res = deserialized;
             }
             else
             {
