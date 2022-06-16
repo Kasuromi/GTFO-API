@@ -7,6 +7,7 @@ using GTFO.API.Attributes;
 using GTFO.API.Resources;
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
+using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.Runtime;
 using Il2CppInterop.Runtime.Runtime.VersionSpecific.Class;
 using Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo;
@@ -117,7 +118,7 @@ namespace GTFO.API
 
             INativeMethodInfoStruct il2cppMethodInfo = UnityVersionHandler.Wrap((Il2CppMethodInfo*)IL2CPP.il2cpp_method_get_from_reflection(genericMethodInfo.Pointer));
 
-            return NativeDetourHelper.CreateAndApply(il2cppMethodInfo.MethodPointer, to, out original);
+            return INativeDetour.CreateAndApply(il2cppMethodInfo.MethodPointer, to, out original);
         }
 
         private static IEnumerable<TAttribute> GetCustomAttributesInType<T, TAttribute>() where TAttribute : Attribute

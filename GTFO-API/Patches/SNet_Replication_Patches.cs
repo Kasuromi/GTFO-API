@@ -3,7 +3,7 @@ using System.Text;
 using GTFO.API.Impl;
 using GTFO.API.Resources;
 using HarmonyLib;
-using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SNetwork;
 
 namespace GTFO.API.Patches

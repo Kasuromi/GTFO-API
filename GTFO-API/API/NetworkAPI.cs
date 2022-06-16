@@ -5,7 +5,7 @@ using GTFO.API.Attributes;
 using GTFO.API.Extensions;
 using GTFO.API.Impl;
 using GTFO.API.Resources;
-using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using SNetwork;
 
 namespace GTFO.API

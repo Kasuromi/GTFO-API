@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using BepInEx;
-using BepInEx.IL2CPP.Hook;
 using Gear;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
