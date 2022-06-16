@@ -5,8 +5,8 @@ using GameData;
 using GTFO.API.Attributes;
 using GTFO.API.Components;
 using GTFO.API.Resources;
+using Il2CppInterop.Runtime.Injection;
 using LevelGeneration;
-using UnhollowerRuntimeLib;
 using UnityEngine;
 
 namespace GTFO.API

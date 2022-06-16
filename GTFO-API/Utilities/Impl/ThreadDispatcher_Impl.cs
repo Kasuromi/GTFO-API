@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnhollowerBaseLib.Attributes;
+using Il2CppInterop.Runtime.Attributes;
 using UnityEngine;
 
 namespace GTFO.API.Utilities.Impl

@@ -4,7 +4,7 @@ using GTFO.API.Impl;
 using GTFO.API.Utilities.Impl;
 using GTFO.API.Wrappers;
 using HarmonyLib;
-using UnhollowerRuntimeLib;
+using Il2CppInterop.Runtime.Injection;
 
 namespace GTFO.API
 {
