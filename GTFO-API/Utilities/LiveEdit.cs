@@ -19,7 +19,7 @@ namespace GTFO.API.Utilities
     /// </summary>
     public static class LiveEdit
     {
-        private static readonly List<LiveEditListener> s_Listeners = new();
+        internal static readonly List<LiveEditListener> s_Listeners = new();
 
         /// <summary>
         /// Create the LiveEdit Listener and Allocate
@@ -36,28 +36,6 @@ namespace GTFO.API.Utilities
 
             s_Listeners.Add(listener);
             return listener;
-        }
-
-        /// <summary>
-        /// Deallocate the LiveEdit Listener
-        /// </summary>
-        /// <param name="listener">Listener to deallocate</param>
-        public static void DeallocateListener(LiveEditListener listener)
-        {
-            if (listener == null)
-            {
-                APILogger.Error(nameof(LiveEdit), "DeallocateListener - listener was null!");
-                return;
-            }
-
-            if (!listener.m_Allocated)
-            {
-                APILogger.Error(nameof(LiveEdit), "DeallocateListener - listener was already deallocated!");
-                return;
-            }
-
-            s_Listeners.Remove(listener);
-            listener.Dispose();
         }
     }
 
@@ -118,7 +96,8 @@ namespace GTFO.API.Utilities
         {
             if (m_Allocated)
             {
-                LiveEdit.DeallocateListener(this);
+                LiveEdit.s_Listeners.Remove(this);
+                m_Allocated = false;
             }
             
             if (m_Watcher != null)
