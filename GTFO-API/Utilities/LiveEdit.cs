@@ -29,11 +29,7 @@ namespace GTFO.API.Utilities
         /// <param name="includeSubDir">Include Sub-directories?</param>
         public static LiveEditListener CreateListener(string path, string filter, bool includeSubDir)
         {
-            LiveEditListener listener = new(path, filter, includeSubDir)
-            {
-                m_Allocated = true
-            };
-
+            LiveEditListener listener = new(path, filter, includeSubDir);
             s_Listeners.Add(listener);
             return listener;
         }
@@ -62,8 +58,8 @@ namespace GTFO.API.Utilities
         /// </summary>
         public event LiveEditEventHandler FileRenamed;
 
-        internal FileSystemWatcher m_Watcher = null;
-        internal bool m_Allocated = false;
+        private FileSystemWatcher m_Watcher = null;
+        private bool m_Allocated = true;
 
         private LiveEditListener() { }
 
