@@ -27,10 +27,11 @@ namespace GTFO.API.Utilities
         /// <param name="path">Base Path to Track the change</param>
         /// <param name="filter">File filter to filter the files ie) *.json</param>
         /// <param name="includeSubDir">Include Sub-directories?</param>
-        public static void CreateListener(string path, string filter, bool includeSubDir)
+        public static LiveEditListener CreateListener(string path, string filter, bool includeSubDir)
         {
             var listener = new LiveEditListener(path, filter, includeSubDir);
             m_Listeners.Add(listener);
+            return listener;
         }
 
         /// <summary>
@@ -101,10 +102,13 @@ namespace GTFO.API.Utilities
             {
                 APILogger.Error("LiveEdit", $"Path: {path} error reported! - {e.GetException()}");
             };
+
+            StartListen();
         }
 
         internal void Deallocate()
         {
+            StopListen();
             m_Watcher.EnableRaisingEvents = false;
             FileChanged = null;
             FileDeleted = null;
