@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace GTFO.API.Utilities
 {
@@ -19,6 +21,9 @@ namespace GTFO.API.Utilities
     /// </summary>
     public static class LiveEdit
     {
+        internal const int RETRY_COUNT = 5;
+        internal const float RETRY_INTERVAL = 0.1f;
+
         internal static readonly List<LiveEditListener> s_Listeners = new();
 
         /// <summary>
@@ -32,6 +37,45 @@ namespace GTFO.API.Utilities
             LiveEditListener listener = new(path, filter, includeSubDir);
             s_Listeners.Add(listener);
             return listener;
+        }
+
+        /// <summary>
+        /// Read File Content safely from file
+        /// </summary>
+        /// <param name="filepath">File path to Read all Content</param>
+        /// <param name="onReaded">Callback when it readed all content</param>
+        public static void TryReadFileContent(string filepath, Action<string> onReaded)
+        {
+            CoroutineDispatcher.StartCoroutine(GetFileStream(filepath, RETRY_COUNT, RETRY_INTERVAL, (stream) =>
+            {
+                try
+                {
+                    using var reader = new StreamReader(stream, Encoding.UTF8);
+                    onReaded?.Invoke(reader.ReadToEnd());
+                }
+                catch { }
+            }));
+        }
+
+        private static IEnumerator GetFileStream(string filepath, int retryCount, float retryInterval, Action<FileStream> onFileStreamOpened)
+        {
+            retryCount = Math.Max(retryCount, 1);
+            retryInterval = Math.Max(retryInterval, 0.0f);
+
+            var wait = new WaitForSecondsRealtime(retryInterval);
+            for(int i = 0; i < retryCount; i++)
+            {
+                try
+                {
+                    var stream = new FileStream(filepath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+                    onFileStreamOpened?.Invoke(stream);
+                    stream.Close();
+                    yield break;
+                }
+                catch { }
+
+                yield return wait;
+            }
         }
     }
 
