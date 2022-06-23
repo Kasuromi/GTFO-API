@@ -19,7 +19,7 @@ namespace GTFO.API.Utilities
     /// </summary>
     public static class LiveEdit
     {
-        private static readonly List<LiveEditListener> m_Listeners = new ();
+        private static readonly List<LiveEditListener> s_Listeners = new();
 
         /// <summary>
         /// Create the LiveEdit Listener and Allocate
@@ -29,8 +29,12 @@ namespace GTFO.API.Utilities
         /// <param name="includeSubDir">Include Sub-directories?</param>
         public static LiveEditListener CreateListener(string path, string filter, bool includeSubDir)
         {
-            var listener = new LiveEditListener(path, filter, includeSubDir);
-            m_Listeners.Add(listener);
+            LiveEditListener listener = new(path, filter, includeSubDir)
+            {
+                m_Allocated = true
+            };
+
+            s_Listeners.Add(listener);
             return listener;
         }
 
@@ -42,18 +46,18 @@ namespace GTFO.API.Utilities
         {
             if (listener == null)
             {
-                APILogger.Error("LiveEdit", "DeallocateListener - listener was null!");
+                APILogger.Error(nameof(LiveEdit), "DeallocateListener - listener was null!");
                 return;
             }
 
-            if (listener.m_Watcher == null)
+            if (!listener.m_Allocated)
             {
-                APILogger.Error("LiveEdit", "DeallocateListener - listener was already deallocated!");
+                APILogger.Error(nameof(LiveEdit), "DeallocateListener - listener was already deallocated!");
                 return;
             }
 
-            m_Listeners.Remove(listener);
-            listener.Deallocate();
+            s_Listeners.Remove(listener);
+            listener.Dispose();
         }
     }
 
@@ -61,26 +65,27 @@ namespace GTFO.API.Utilities
     /// 
     /// </summary>
     [SuppressMessage("Interoperability", "CA1416:Platform Compatible on FileSystemWatcher", Justification = "GTFO is Windows only game")]
-    public sealed class LiveEditListener
+    public sealed class LiveEditListener : IDisposable
     {
         /// <summary>
-        /// Event when File has Changed
+        /// Event when File has Changed, Thread-safe
         /// </summary>
         public event LiveEditEventHandler FileChanged;
         /// <summary>
-        /// Event when File has Deleted
+        /// Event when File has Deleted, Thread-safe
         /// </summary>
         public event LiveEditEventHandler FileDeleted;
         /// <summary>
-        /// Event when File has Created
+        /// Event when File has Created, Thread-safe
         /// </summary>
         public event LiveEditEventHandler FileCreated;
         /// <summary>
-        /// Event when File has Renamed
+        /// Event when File has Renamed, Thread-safe
         /// </summary>
         public event LiveEditEventHandler FileRenamed;
 
         internal FileSystemWatcher m_Watcher = null;
+        internal bool m_Allocated = false;
 
         private LiveEditListener() { }
 
@@ -94,28 +99,40 @@ namespace GTFO.API.Utilities
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime
             };
 
-            m_Watcher.Changed += (sender, e) => { FileChanged?.Invoke(e); };
-            m_Watcher.Deleted += (sender, e) => { FileDeleted?.Invoke(e); };
-            m_Watcher.Created += (sender, e) => { FileCreated?.Invoke(e); };
-            m_Watcher.Renamed += (sender, e) => { FileRenamed?.Invoke(e); };
+            m_Watcher.Changed += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileChanged?.Invoke(e); }); };
+            m_Watcher.Deleted += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileDeleted?.Invoke(e); }); };
+            m_Watcher.Created += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileCreated?.Invoke(e); }); };
+            m_Watcher.Renamed += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileRenamed?.Invoke(e); }); };
             m_Watcher.Error += (sender, e) =>
             {
-                APILogger.Error("LiveEdit", $"Path: {path} error reported! - {e.GetException()}");
+                APILogger.Error(nameof(LiveEdit), $"Path: {path} error reported! - {e.GetException()}");
             };
 
             StartListen();
         }
 
-        internal void Deallocate()
+        /// <summary>
+        /// Dispose LiveEditListener
+        /// </summary>
+        public void Dispose()
         {
-            StopListen();
-            m_Watcher.EnableRaisingEvents = false;
-            FileChanged = null;
-            FileDeleted = null;
-            FileCreated = null;
-            FileRenamed = null;
-            m_Watcher.Dispose();
+            if (m_Allocated)
+            {
+                LiveEdit.DeallocateListener(this);
+            }
+            
+            if (m_Watcher != null)
+            {
+                StopListen();
+                FileChanged = null;
+                FileDeleted = null;
+                FileCreated = null;
+                FileRenamed = null;
+                m_Watcher.Dispose();
+            }
+
             m_Watcher = null;
+            m_Allocated = false;
         }
 
         /// <summary>
