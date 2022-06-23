@@ -111,7 +111,6 @@ namespace GTFO.API.Utilities
             }
 
             m_Watcher = null;
-            m_Allocated = false;
         }
 
         /// <summary>
