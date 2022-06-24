@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using BepInEx;
+using BepInEx.IL2CPP.Hook;
 using Gear;
 using HarmonyLib;
 using Il2CppInterop.Runtime;
@@ -32,14 +33,14 @@ namespace GTFO.API.Patches
             var saveMethod = nameof(CellJSON.SaveToDisk);
 
             APILogger.Verbose(nameof(GearManager_Patches), "Applying ReadFromDisk Patch");
-            Il2CppAPI.CreateGenericDetour<CellJSON, ReadFromDiskDelegate>(readMethod, "T", new[]
+            m_ReadFromDiskDetour = Il2CppAPI.CreateGenericDetour<CellJSON, ReadFromDiskDelegate>(readMethod, "T", new[]
             {
                 typeof(string).FullName,
                 typeof(bool).MakeByRefType().FullName
             }, new[] { typeof(GearFavoritesData) }, Patch_ReadFromDisk, out m_ReadFromDiskOriginal);
 
             APILogger.Verbose(nameof(GearManager_Patches), "Applying SaveToDisk Patch");
-            Il2CppAPI.CreateGenericDetour<CellJSON, SaveToDiskDelegate>(saveMethod, typeof(void).FullName, new string[]
+            m_SaveToDiskDetour = Il2CppAPI.CreateGenericDetour<CellJSON, SaveToDiskDelegate>(saveMethod, typeof(void).FullName, new string[]
             {
                 typeof(string).FullName,
                 "T"
@@ -48,6 +49,7 @@ namespace GTFO.API.Patches
             m_PatchApplied = true;
         }
 
+        private static INativeDetour m_ReadFromDiskDetour;
         private static ReadFromDiskDelegate m_ReadFromDiskOriginal;
         private unsafe delegate IntPtr ReadFromDiskDelegate(IntPtr path, byte* createNew, Il2CppMethodInfo* methodInfo);
         private static unsafe IntPtr Patch_ReadFromDisk(IntPtr path, byte* createNew, Il2CppMethodInfo* methodInfo)
@@ -62,6 +64,7 @@ namespace GTFO.API.Patches
                 return m_ReadFromDiskOriginal(path, createNew, methodInfo);
         }
 
+        private static INativeDetour m_SaveToDiskDetour;
         private static SaveToDiskDelegate m_SaveToDiskOriginal;
         private unsafe delegate void SaveToDiskDelegate(IntPtr path, IntPtr obj, Il2CppMethodInfo* methodInfo);
         private static unsafe void Patch_SaveToDisk(IntPtr path, IntPtr favData, Il2CppMethodInfo* methodInfo)
