@@ -9,11 +9,32 @@ using UnityEngine;
 
 namespace GTFO.API.Impl
 {
-    internal class NetworkingEventInfo<T> where T : struct
+    internal interface INetworkingEventInfo
+    {
+        string Name { get; }
+        Type EventType { get; }
+        int EventTypeSize { get; }
+        byte[] EventNameBytes { get; }
+        void InvokeOnReceive(ulong sender, object payload);
+    }
+
+    internal class NetworkingEventInfo<T> : INetworkingEventInfo where T : struct
     {
         public string Name { get; set; }
         public Action<ulong, T> OnReceive { get; set; }
+        public Type EventType { get; set; }
+        public int EventTypeSize { get; set; }
+        public byte[] EventNameBytes { get; set; }
+
+        public void InvokeOnReceive(ulong sender, object payload)
+        {
+            if (payload is T castedPayload)
+            {
+                OnReceive?.Invoke(sender, castedPayload);
+            }
+        }
     }
+
     internal class NetworkAPI_Impl : MonoBehaviour
     {
         public NetworkAPI_Impl(IntPtr intPtr) : base(intPtr) { }
@@ -62,8 +83,8 @@ namespace GTFO.API.Impl
         [HideFromIl2Cpp]
         public void HandlePacket(string eventName, ulong senderId, byte[] packetData, int startIndex = 0)
         {
-            Type eventType = m_EventTypes[eventName];
-            object eventInfo = m_Events[eventName];
+            INetworkingEventInfo eventInfo = m_Events[eventName];
+            Type eventType = eventInfo.EventType;
 
             XORPacket(ref packetData, m_Signature, startIndex);
 
@@ -75,25 +96,32 @@ namespace GTFO.API.Impl
 
             Marshal.FreeHGlobal(pPacket);
 
-            object receiveDelegate = eventInfo.GetType().GetProperty("OnReceive").GetValue(eventInfo);
-
-            Type receiveDelegateType = typeof(Action<,>).MakeGenericType(typeof(ulong), eventType);
-            receiveDelegateType.GetMethod("Invoke").Invoke(receiveDelegate, new object[] { senderId, managedPacket });
+            eventInfo.InvokeOnReceive(senderId, managedPacket);
         }
 
         [HideFromIl2Cpp]
         public void RegisterEvent<T>(string eventName, Action<ulong, T> onReceive) where T : struct
         {
-            if (EventExists(eventName)) throw new ArgumentException($"An event with the name {eventName} has already been registered.", nameof(eventName));
+            if (EventExists(eventName))
+            {
+                throw new ArgumentException($"An event with the name {eventName} has already been registered.", nameof(eventName));
+            }
+
+            if (typeof(T).IsGenericType)
+            {
+                throw new ArgumentException($"Generic type is not allowed to register", nameof(T));
+            }
 
             NetworkingEventInfo<T> eventInfo = new()
             {
                 Name = eventName,
-                OnReceive = onReceive
+                OnReceive = onReceive,
+                EventType = typeof(T),
+                EventTypeSize = Marshal.SizeOf<T>(),
+                EventNameBytes = Encoding.UTF8.GetBytes(eventName)
             };
 
             m_Events.Add(eventName, eventInfo);
-            m_EventTypes.Add(eventName, typeof(T));
         }
 
         [HideFromIl2Cpp]
@@ -102,9 +130,18 @@ namespace GTFO.API.Impl
         [HideFromIl2Cpp]
         public byte[] MakePacketBytes<T>(string eventName, T payload) where T : struct
         {
-            byte[] eventNameBytes = Encoding.UTF8.GetBytes(eventName);
+            if (!m_Events.TryGetValue(eventName, out INetworkingEventInfo info))
+            {
+                throw new ArgumentException($"An event with the name {eventName} was not registered.", nameof(eventName));
+            }
 
-            int size = 2 + NetworkConstants.MagicSize + 8 + 2 + eventNameBytes.Length + Marshal.SizeOf<T>();
+            if (info.EventType != typeof(T))
+            {
+                throw new ArgumentException($"Payload type was incorrect! expecting: {typeof(T).FullName}", nameof(eventName));
+            }
+
+            byte[] eventNameBytes = info.EventNameBytes;
+            int size = 2 + NetworkConstants.MagicSize + 8 + 2 + eventNameBytes.Length + info.EventTypeSize;
             IntPtr pPacketBase = Marshal.AllocHGlobal(size);
 
             IntPtr pPacket = pPacketBase;
@@ -112,7 +149,7 @@ namespace GTFO.API.Impl
             Marshal.WriteInt16(pPacket, (short)m_ReplicatorKey);
             pPacket += 2;
 
-            Marshal.Copy(Encoding.ASCII.GetBytes(NetworkConstants.Magic), 0, pPacket, NetworkConstants.MagicSize);
+            Marshal.Copy(m_MagicBytes, 0, pPacket, NetworkConstants.MagicSize);
             pPacket += NetworkConstants.MagicSize;
 
             Marshal.WriteInt64(pPacket, (long)m_Signature);
@@ -138,8 +175,9 @@ namespace GTFO.API.Impl
         public ushort m_ReplicatorKey = 0xFFFD;
         public ulong m_Signature = NetworkConstants.VersionSignature;
 
-        private readonly Dictionary<string, object> m_Events = new();
-        private readonly Dictionary<string, Type> m_EventTypes = new();
+        private readonly Dictionary<string, INetworkingEventInfo> m_Events = new();
+
+        private static readonly byte[] m_MagicBytes = Encoding.ASCII.GetBytes(NetworkConstants.Magic);
 
         private static NetworkAPI_Impl s_Instance;
     }
