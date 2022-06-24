@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
     <RootNamespace>GTFO.API</RootNamespace>
-    <Version>0.2.1</Version>
+    <Version>0.3.0</Version>
   </PropertyGroup>
 </Project>
