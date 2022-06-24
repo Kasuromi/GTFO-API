@@ -14,7 +14,51 @@ namespace GTFO.API.Utilities
     /// LiveEditEventHandler
     /// </summary>
     /// <param name="e">EventArgs</param>
-    public delegate void LiveEditEventHandler(FileSystemEventArgs e);
+    public delegate void LiveEditEventHandler(LiveEditEventArgs e);
+
+    /// <summary>
+    /// LiveEditEvent Arguments
+    /// </summary>
+    public class LiveEditEventArgs
+    {
+        /// <summary>
+        /// Updated Event Type
+        /// </summary>
+        public LiveEditEventType Type { get; set; }
+
+        /// <summary>
+        /// Full Path to File which it Updated
+        /// </summary>
+        public string FullPath { get; set; }
+
+        /// <summary>
+        /// Filename which it Updated
+        /// </summary>
+        public string FileName { get; set; }
+    }
+
+    /// <summary>
+    /// LiveEditEvent Type
+    /// </summary>
+    public enum LiveEditEventType
+    {
+        /// <summary>
+        /// File has created
+        /// </summary>
+        Created,
+        /// <summary>
+        /// File has deleted
+        /// </summary>
+        Deleted,
+        /// <summary>
+        /// File has renamed
+        /// </summary>
+        Renamed,
+        /// <summary>
+        /// File has changed
+        /// </summary>
+        Changed
+    }
 
     /// <summary>
     /// Utility class to make support of LiveEdit config file for plugins
@@ -86,6 +130,11 @@ namespace GTFO.API.Utilities
     public sealed class LiveEditListener : IDisposable
     {
         /// <summary>
+        /// Cooldown for FileChangedEvent for filtering double call of FileChanged event
+        /// </summary>
+        public float FileChangedEventCooldown { get; set; } = 0.05f;
+
+        /// <summary>
         /// Event when File has Changed, Thread-safe
         /// </summary>
         public event LiveEditEventHandler FileChanged;
@@ -104,6 +153,7 @@ namespace GTFO.API.Utilities
 
         private FileSystemWatcher m_Watcher = null;
         private bool m_Allocated = true;
+        private float m_ChangedCooldownTimer = 0.0f;
 
         private LiveEditListener() { }
 
@@ -117,16 +167,39 @@ namespace GTFO.API.Utilities
                 NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime
             };
 
-            m_Watcher.Changed += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileChanged?.Invoke(e); }); };
-            m_Watcher.Deleted += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileDeleted?.Invoke(e); }); };
-            m_Watcher.Created += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileCreated?.Invoke(e); }); };
-            m_Watcher.Renamed += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileRenamed?.Invoke(e); }); };
+            
+            m_Watcher.Deleted += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileDeleted?.Invoke(CreateArgs(e, LiveEditEventType.Deleted)); }); };
+            m_Watcher.Created += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileCreated?.Invoke(CreateArgs(e, LiveEditEventType.Created)); }); };
+            m_Watcher.Renamed += (sender, e) => { ThreadDispatcher.Dispatch(() => { FileRenamed?.Invoke(CreateArgs(e, LiveEditEventType.Renamed)); }); };
+            m_Watcher.Changed += (sender, e) =>
+            {
+                ThreadDispatcher.Dispatch(() =>
+                {
+                    var time = Time.time;
+
+                    if (m_ChangedCooldownTimer > time)
+                        return;
+
+                    m_ChangedCooldownTimer = time + FileChangedEventCooldown;
+                    FileChanged?.Invoke(CreateArgs(e, LiveEditEventType.Changed));
+                });
+            };
             m_Watcher.Error += (sender, e) =>
             {
                 APILogger.Error(nameof(LiveEdit), $"Path: {path} error reported! - {e.GetException()}");
             };
 
             StartListen();
+        }
+
+        private static LiveEditEventArgs CreateArgs(FileSystemEventArgs args, LiveEditEventType type)
+        {
+            return new()
+            {
+                FullPath = args.FullPath,
+                FileName = Path.GetFileName(args.FullPath),
+                Type = type
+            };
         }
 
         /// <summary>
