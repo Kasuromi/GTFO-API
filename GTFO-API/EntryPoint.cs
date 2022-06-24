@@ -22,6 +22,7 @@ namespace GTFO.API
 
             APILogger.Verbose("Core", "Registering Utilities Implementations");
             ClassInjector.RegisterTypeInIl2Cpp<ThreadDispatcher_Impl>();
+            ClassInjector.RegisterTypeInIl2Cpp<CoroutineDispatcher_Impl>();
 
             APILogger.Verbose("Core", "Applying Patches");
             m_Harmony = new Harmony("dev.gtfomodding.gtfo-api");
