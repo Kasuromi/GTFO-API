@@ -23,20 +23,27 @@ namespace GTFO.API.Patches
                 RundownDataBlock.RemoveBlockByID(1);
 
                 RundownDataBlock block = RundownDataBlock.GetBlock(setupBlock.RundownIdToLoad);
-                block.persistentID = 1;
-                block.name = $"MOVEDBYAPI_{block.name}";
+                if (block != null)
+                {
+                    block.persistentID = 1;
+                    block.name = $"MOVEDBYAPI_{block.name}";
 
-                block.UseTierUnlockRequirements = false;
-                RemoveRequirementFromList(block.TierA);
-                RemoveRequirementFromList(block.TierB);
-                RemoveRequirementFromList(block.TierC);
-                RemoveRequirementFromList(block.TierD);
-                RemoveRequirementFromList(block.TierE);
+                    block.UseTierUnlockRequirements = false;
+                    RemoveRequirementFromList(block.TierA);
+                    RemoveRequirementFromList(block.TierB);
+                    RemoveRequirementFromList(block.TierC);
+                    RemoveRequirementFromList(block.TierD);
+                    RemoveRequirementFromList(block.TierE);
 
-                RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdToLoad);
-                RundownDataBlock.AddBlock(block, -1);
+                    RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdToLoad);
+                    RundownDataBlock.AddBlock(block, -1);
 
-                setupBlock.RundownIdToLoad = 1;
+                    setupBlock.RundownIdToLoad = 1;
+                }
+                else
+                {
+                    APILogger.Error(nameof(GameDataInit_Patches), $"GameSetupDataBlock points to an invalid Rundown Id");
+                }
             }
 
             GameDataAPI.InvokeGameDataInit();
