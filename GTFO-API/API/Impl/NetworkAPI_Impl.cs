@@ -104,7 +104,7 @@ namespace GTFO.API.Impl
         {
             if (EventExists(eventName))
             {
-                throw new ArgumentException($"An event with the name {eventName} has already been registered.", nameof(eventName));
+                throw new ArgumentException($"Type {typeof(T)} is a generic and cannot be registered.", nameof(eventName));
             }
 
             if (typeof(T).IsGenericType)
@@ -149,7 +149,7 @@ namespace GTFO.API.Impl
             Marshal.WriteInt16(pPacket, (short)m_ReplicatorKey);
             pPacket += 2;
 
-            Marshal.Copy(m_MagicBytes, 0, pPacket, NetworkConstants.MagicSize);
+            Marshal.Copy(s_MagicBytes, 0, pPacket, NetworkConstants.MagicSize);
             pPacket += NetworkConstants.MagicSize;
 
             Marshal.WriteInt64(pPacket, (long)m_Signature);
@@ -177,7 +177,7 @@ namespace GTFO.API.Impl
 
         private readonly Dictionary<string, INetworkingEventInfo> m_Events = new();
 
-        private static readonly byte[] m_MagicBytes = Encoding.ASCII.GetBytes(NetworkConstants.Magic);
+        private static readonly byte[] s_MagicBytes = Encoding.ASCII.GetBytes(NetworkConstants.Magic);
 
         private static NetworkAPI_Impl s_Instance;
     }
