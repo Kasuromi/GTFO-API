@@ -52,11 +52,13 @@ namespace GTFO.API.Utilities.Impl
             }
         }
 
+        [HideFromIl2Cpp]
         internal void RunCoroutine(IEnumerator routine)
         {
             this.StartCoroutine(routine);
         }
 
+        [HideFromIl2Cpp]
         internal void RunInLevelCoroutine(IEnumerator routine)
         {
             if (!GameStateManager.IsInExpedition)
