@@ -7,7 +7,7 @@
 
     <PropertyGroup>
         <BIELibsFolder>$(GameFolder)\BepInEx\core</BIELibsFolder>
-        <CorLibsFolder>$(GameFolder)\dotnet\corlib</CorLibsFolder>
+        <CorLibsFolder>$(GameFolder)\dotnet</CorLibsFolder>
         <InteropLibsFolder>$(GameFolder)\BepInEx\interop</InteropLibsFolder>
         <PluginsFolder>$(GameFolder)\BepInEx\plugins</PluginsFolder>
     </PropertyGroup>
@@ -24,10 +24,10 @@
         <Reference Include="$(BIELibsFolder)\0Harmony.dll" Private="false" />
         <Reference Include="$(BIELibsFolder)\MonoMod.RuntimeDetour.dll" Private="false" />
         <Reference Include="$(BIELibsFolder)\Il2CppInterop.*.dll" Private="false" />
+        <Reference Include="$(BIELibsFolder)\SemanticVersioning.dll" Private="false" />
 
         <!-- CoreCLR -->
         <Reference Include="$(CorLibsFolder)\*.dll" Private="false" />
-        <Reference Include="$(CorLibsFolder)\..\System.Private.CoreLib.dll" Private="false" />
 
         <!-- Interop -->
         <Reference Include="$(InteropLibsFolder)/*.dll" Private="false" />
