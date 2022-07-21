@@ -30,7 +30,7 @@ namespace GTFO.API
 
 #if DEBUG
             OnLevelDataUpdated += (activeExp, expData) => APILogger.Debug(nameof(LevelAPI), $"OnLevelDataUpdated Invoked");
-            OnLevelSelected += (tier, index) => APILogger.Debug(nameof(LevelAPI), $"OnLevelSelected(tier: {tier}, index: {index}) Invoked");
+            OnLevelSelected += (tier, index, data) => APILogger.Debug(nameof(LevelAPI), $"OnLevelSelected(tier: {tier}, index: {index}, publicName: {data.Descriptive.PublicName}) Invoked");
             OnBuildStart += () => APILogger.Debug(nameof(LevelAPI), "OnBuildStart Invoked");
             OnBuildDone += () => APILogger.Debug(nameof(LevelAPI), "OnBuildDone Invoked");
             OnEnterLevel += () => APILogger.Debug(nameof(LevelAPI), "OnEnterLevel Invoked");
@@ -46,7 +46,7 @@ namespace GTFO.API
         /// <summary>
         /// Invoked when Level has Selected
         /// </summary>
-        public static event Action<eRundownTier, int> OnLevelSelected;
+        public static event Action<eRundownTier, int, ExpeditionInTierData> OnLevelSelected;
 
         /// <summary>
         /// Invoked when LevelBuild has started
@@ -77,7 +77,7 @@ namespace GTFO.API
 
             if (tier != s_LatestExpTier || index != s_LatestExpIndex)
             {
-                OnLevelSelected?.Invoke(tier, index);
+                OnLevelSelected?.Invoke(tier, index, expData);
                 s_LatestExpTier = tier;
                 s_LatestExpIndex = index;
             }
