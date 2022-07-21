@@ -53,23 +53,24 @@ namespace GTFO.API.Utilities.Impl
         }
 
         [HideFromIl2Cpp]
-        internal void RunCoroutine(IEnumerator routine)
+        internal Coroutine RunCoroutine(IEnumerator routine)
         {
-            this.StartCoroutine(routine);
+            return this.StartCoroutine(routine);
         }
 
         [HideFromIl2Cpp]
-        internal void RunInLevelCoroutine(IEnumerator routine)
+        internal Coroutine RunInLevelCoroutine(IEnumerator routine)
         {
             if (!GameStateManager.IsInExpedition)
             {
                 APILogger.Error(nameof(CoroutineDispatcher), "Cannot run InLevelCoroutine while you're not in level!");
-                return;
+                return null;
             }
 
             var coroutine = this.StartCoroutine(routine);
             m_InLevelCoroutines.Add(coroutine);
             m_HasInLevelCoroutines = true;
+            return coroutine;
         }
 
         private bool m_HasInLevelCoroutines = false;
