@@ -18,6 +18,7 @@ namespace GTFO.API.Utilities
         /// Start Coroutine (persistent between sessions)
         /// </summary>
         /// <param name="routine">Coroutine to Run</param>
+        /// <returns>Coroutine Instance for StopCoroutine</returns>
         public static Coroutine StartCoroutine(IEnumerator routine)
         {
             return CoroutineDispatcher_Impl.Instance.RunCoroutine(routine);
@@ -27,6 +28,7 @@ namespace GTFO.API.Utilities
         /// Start InLevel Coroutine that will be stopped automatically when you stop playing level
         /// </summary>
         /// <param name="routine">Coroutine to Run</param>
+        /// <returns>Coroutine Instance for StopCoroutine, Null if Game is not in Level</returns>
         public static Coroutine StartInLevelCoroutine(IEnumerator routine)
         {
             return CoroutineDispatcher_Impl.Instance.RunInLevelCoroutine(routine);
