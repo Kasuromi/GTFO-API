@@ -29,6 +29,7 @@ namespace GTFO.API
             m_Harmony.PatchAll();
 
             AssetAPI.Setup();
+            LevelAPI.Setup();
 
             APILogger.Verbose("Core", "Plugin Load Complete");
 
