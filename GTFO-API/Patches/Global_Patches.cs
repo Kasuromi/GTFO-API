@@ -14,7 +14,7 @@ namespace GTFO.API.Patches
         [HarmonyPatch(nameof(Global.OnLevelCleanup))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]
-        private static void Post_LevelCleanup()
+        private static void LevelCleanup_Postfix()
         {
             LevelAPI.LevelCleanup();
         }

@@ -14,7 +14,7 @@ namespace GTFO.API.Patches
         [HarmonyPatch(nameof(RundownManager.SetActiveExpedition))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]
-        private static void Post_SetActiveExpedition(pActiveExpedition expPackage, ExpeditionInTierData expTierData)
+        private static void SetActiveExpedition_Postfix(pActiveExpedition expPackage, ExpeditionInTierData expTierData)
         {
             LevelAPI.ExpeditionUpdated(expPackage, expTierData);
         }

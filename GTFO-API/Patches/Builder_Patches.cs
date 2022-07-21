@@ -14,11 +14,11 @@ namespace GTFO.API.Patches
         [HarmonyPatch(nameof(Builder.Build))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]
-        private static void Post_BuildStart() => LevelAPI.BuildStart();
+        private static void BuildStart_Postfix() => LevelAPI.BuildStart();
 
         [HarmonyPatch(nameof(Builder.BuildDone))]
         [HarmonyWrapSafe]
         [HarmonyPostfix]
-        private static void Post_BuildDone() => LevelAPI.BuildDone();
+        private static void BuildDone_Postfix() => LevelAPI.BuildDone();
     }
 }
