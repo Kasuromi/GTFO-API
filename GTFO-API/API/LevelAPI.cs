@@ -10,6 +10,21 @@ using SNetwork;
 
 namespace GTFO.API
 {
+    /// <summary>
+    /// Delegate for LevelDataUpdate Event
+    /// </summary>
+    /// <param name="activeExp">Currenct Data of Expedition (Contains Rundown Type / Expedition Index / Seed Info)</param>
+    /// <param name="expData">Current Data of Expedition in RundownDataBlock</param>
+    public delegate void LevelDataUpdateEvent(ActiveExpedition activeExp, ExpeditionInTierData expData);
+
+    /// <summary>
+    /// Delegate for LevelSelected Event
+    /// </summary>
+    /// <param name="expTier">Tier of Selected Expedition</param>
+    /// <param name="expIndexInTier">Expedition Index inside tier of Selected Expedition</param>
+    /// <param name="expData">Current Data of Expedition in RundownDataBlock</param>
+    public delegate void LevelSelectedEvent(eRundownTier expTier, int expIndexInTier, ExpeditionInTierData expData);
+
     [API("Level")]
     public static class LevelAPI
     {
@@ -41,12 +56,12 @@ namespace GTFO.API
         /// <summary>
         /// Invoked when Level Data has Updated (This includes level change / seed change)
         /// </summary>
-        public static event Action<ActiveExpedition, ExpeditionInTierData> OnLevelDataUpdated;
+        public static event LevelDataUpdateEvent OnLevelDataUpdated;
 
         /// <summary>
         /// Invoked when Level has Selected
         /// </summary>
-        public static event Action<eRundownTier, int, ExpeditionInTierData> OnLevelSelected;
+        public static event LevelSelectedEvent OnLevelSelected;
 
         /// <summary>
         /// Invoked when LevelBuild has started
