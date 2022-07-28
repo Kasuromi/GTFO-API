@@ -25,10 +25,10 @@ namespace GTFO.API.JSON.Converters
             switch (reader.TokenType)
             {
                 case JsonTokenType.StartObject:
-
+                    int depth = reader.CurrentDepth;
                     while (reader.Read())
                     {
-                        if (reader.TokenType == JsonTokenType.EndObject)
+                        if (reader.TokenType == JsonTokenType.EndObject && reader.CurrentDepth == depth)
                             return color * multiplier;
 
                         if (reader.TokenType != JsonTokenType.PropertyName)

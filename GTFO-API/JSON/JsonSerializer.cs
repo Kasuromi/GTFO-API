@@ -11,6 +11,7 @@ namespace GTFO.API.JSON
     public static class JsonSerializer
     {
         private static JsonSerializerOptions s_DefaultSerializerSettings;
+        private static JsonSerializerOptions s_LocalizedTextSerializerSettings;
 
         /// <summary>
         /// Obtains the serialization options used by PersistentData
@@ -41,10 +42,28 @@ namespace GTFO.API.JSON
         }
 
         /// <summary>
+        /// Obtains the serialization options used by PersistentData with LocalizedTextConverter
+        /// </summary>
+        /// <returns>The serialization options used by PersistentData with LocalizedTextConverter</returns>
+        public static JsonSerializerOptions DefaultSerializerSettingsWithLocalizedText
+        {
+            get
+            {
+                if (s_LocalizedTextSerializerSettings == null)
+                {
+                    s_LocalizedTextSerializerSettings = new(DefaultSerializerSettings); //Copy Setting From Default Serializer
+                    s_LocalizedTextSerializerSettings.Converters.Add(new LocalizedTextConverter());
+                }
+
+                return s_LocalizedTextSerializerSettings;
+            }
+        }
+
+        /// <summary>
         /// Converts the object specified into a JSON string.
         /// </summary>
         /// <param name="value">The value to convert.</param>
-        /// <param name="options">Options to control serialization behavior.</param>
+        /// <param name="options">Options to control serialization behavior. If null: DefaultSerializerSettings will be used</param>
         /// <returns>A JSON string representation of the value.</returns>
         public static string Serialize(object value, JsonSerializerOptions options = null)
         {
