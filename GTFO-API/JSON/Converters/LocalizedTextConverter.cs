@@ -41,9 +41,9 @@ namespace GTFO.API.JSON.Converters
 
         public override void Write(Utf8JsonWriter writer, LocalizedText value, JsonSerializerOptions options)
         {
-            if (value.Id != 0u) writer.WriteNumberValue(0u);
-            else if (value.HasTranslation) writer.WriteNumberValue(0u);
-            else writer.WriteNullValue();
+            if (value.Id != 0u) writer.WriteNumberValue(value.Id);
+            else if (value.HasTranslation) writer.WriteStringValue(value.UntranslatedText);
+            else writer.WriteStringValue("");
         }
     }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
