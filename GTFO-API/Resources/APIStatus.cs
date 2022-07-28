@@ -40,6 +40,11 @@ namespace GTFO.API.Resources
         public static ApiStatusInfo Il2Cpp { get; internal set; } = new();
 
         /// <summary>
+        /// Status info for the <see cref="LevelAPI"/>
+        /// </summary>
+        public static ApiStatusInfo Level { get; internal set; } = new();
+
+        /// <summary>
         /// Status info for the <see cref="NetworkAPI"/>
         /// </summary>
         public static ApiStatusInfo Network { get; internal set; } = new();
