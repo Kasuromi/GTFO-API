@@ -19,7 +19,7 @@ namespace GTFO.API.JSON.Converters
             switch (reader.TokenType)
             {
                 case JsonTokenType.String:
-                    var strValue = reader.GetString();
+                    string strValue = reader.GetString();
                     return new LocalizedText
                     {
                         Id = 0,
