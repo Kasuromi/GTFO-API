@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using BepInEx.IL2CPP;
+using BepInEx.Unity.IL2CPP;
 using GameData;
 using GTFO.API.Impl;
 using GTFO.API.Resources;

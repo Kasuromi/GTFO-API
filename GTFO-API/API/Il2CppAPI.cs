@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using BepInEx.IL2CPP.Hook;
+using BepInEx.Unity.IL2CPP.Hook;
 using GTFO.API.Attributes;
 using GTFO.API.Resources;
 using Il2CppInterop.Runtime;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using BepInEx;
-using BepInEx.IL2CPP.Hook;
+using BepInEx.Unity.IL2CPP.Hook;
 using Gear;
 using HarmonyLib;
 using Il2CppInterop.Runtime;

@@ -1,5 +1,5 @@
 ﻿using BepInEx;
-using BepInEx.IL2CPP;
+using BepInEx.Unity.IL2CPP;
 using GTFO.API.Impl;
 using GTFO.API.Utilities.Impl;
 using GTFO.API.Wrappers;
