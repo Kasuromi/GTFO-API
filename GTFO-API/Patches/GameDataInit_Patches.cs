@@ -96,12 +96,12 @@ namespace GTFO.API.Patches
             catch { }
 
             GameSetupDataBlock setupBlock = GameDataBlockBase<GameSetupDataBlock>.GetBlock(1);
-            if (setupBlock?.RundownIdToLoad != 1)
+            if (setupBlock?.RundownIdsToLoad[0] != 1)
             {
-                APILogger.Verbose(nameof(GameDataInit_Patches), $"RundownIdToLoad was {setupBlock.RundownIdToLoad}. Setting to 1");
+                APILogger.Verbose(nameof(GameDataInit_Patches), $"RundownIdToLoad was {setupBlock.RundownIdsToLoad[0]}. Setting to 1");
                 RundownDataBlock.RemoveBlockByID(1);
 
-                RundownDataBlock block = RundownDataBlock.GetBlock(setupBlock.RundownIdToLoad);
+                RundownDataBlock block = RundownDataBlock.GetBlock(setupBlock.RundownIdsToLoad[0]);
                 if (block != null)
                 {
                     block.persistentID = 1;
@@ -114,10 +114,10 @@ namespace GTFO.API.Patches
                     RemoveRequirementFromList(block.TierD);
                     RemoveRequirementFromList(block.TierE);
 
-                    RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdToLoad);
+                    RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdsToLoad[0]);
                     RundownDataBlock.AddBlock(block, -1);
 
-                    setupBlock.RundownIdToLoad = 1;
+                    setupBlock.RundownIdsToLoad[0] = 1;
                 }
                 else
                 {
