@@ -96,32 +96,37 @@ namespace GTFO.API.Patches
             catch { }
 
             GameSetupDataBlock setupBlock = GameDataBlockBase<GameSetupDataBlock>.GetBlock(1);
-            if (setupBlock?.RundownIdsToLoad[0] != 1)
+            uint newPersistentId = 1U;
+            for(int i = 0; i < setupBlock.RundownIdsToLoad.Count; i++)
             {
-                APILogger.Verbose(nameof(GameDataInit_Patches), $"RundownIdToLoad was {setupBlock.RundownIdsToLoad[0]}. Setting to 1");
-                RundownDataBlock.RemoveBlockByID(1);
-
-                RundownDataBlock block = RundownDataBlock.GetBlock(setupBlock.RundownIdsToLoad[0]);
-                if (block != null)
+                if (setupBlock?.RundownIdsToLoad[i] != 1)
                 {
-                    block.persistentID = 1;
-                    block.name = $"MOVEDBYAPI_{block.name}";
+                    APILogger.Verbose(nameof(GameDataInit_Patches), $"RundownIdToLoad was {setupBlock.RundownIdsToLoad[i]}. Setting to {newPersistentId}");
+                    RundownDataBlock.RemoveBlockByID(newPersistentId);
 
-                    block.UseTierUnlockRequirements = false;
-                    RemoveRequirementFromList(block.TierA);
-                    RemoveRequirementFromList(block.TierB);
-                    RemoveRequirementFromList(block.TierC);
-                    RemoveRequirementFromList(block.TierD);
-                    RemoveRequirementFromList(block.TierE);
+                    RundownDataBlock block = RundownDataBlock.GetBlock(setupBlock.RundownIdsToLoad[i]);
+                    if (block != null)
+                    {
+                        block.persistentID = newPersistentId;
+                        block.name = $"MOVEDBYAPI_{block.name}";
 
-                    RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdsToLoad[0]);
-                    RundownDataBlock.AddBlock(block, -1);
+                        block.UseTierUnlockRequirements = false;
+                        RemoveRequirementFromList(block.TierA);
+                        RemoveRequirementFromList(block.TierB);
+                        RemoveRequirementFromList(block.TierC);
+                        RemoveRequirementFromList(block.TierD);
+                        RemoveRequirementFromList(block.TierE);
 
-                    setupBlock.RundownIdsToLoad[0] = 1;
-                }
-                else
-                {
-                    APILogger.Error(nameof(GameDataInit_Patches), $"GameSetupDataBlock points to an invalid Rundown Id");
+                        RundownDataBlock.RemoveBlockByID(setupBlock.RundownIdsToLoad[i]);
+                        RundownDataBlock.AddBlock(block, -1);
+
+                        setupBlock.RundownIdsToLoad[i] = newPersistentId;
+                        newPersistentId++;
+                    }
+                    else
+                    {
+                        APILogger.Error(nameof(GameDataInit_Patches), $"GameSetupDataBlock points to an invalid Rundown Id");
+                    }
                 }
             }
 
