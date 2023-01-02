@@ -46,7 +46,7 @@ namespace GTFO.API.Utilities
         {
             get
             {
-                return Path.Combine(Paths.PluginPath, "PersistentData", typeof(T).Assembly.GetName().Name, $"{typeof(T).Name}.json");
+                return Path.Combine(Paths.BepInExRootPath, "GameData", "PersistentData", typeof(T).Assembly.GetName().Name, $"{typeof(T).Name}.json");
             }
         }
 
