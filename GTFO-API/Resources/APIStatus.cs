@@ -30,6 +30,11 @@ namespace GTFO.API.Resources
         public static ApiStatusInfo Asset { get; internal set; } = new();
 
         /// <summary>
+        /// Status info for the <see cref="EventAPI"/>
+        /// </summary>
+        public static ApiStatusInfo Event { get; internal set; } = new();
+
+        /// <summary>
         /// Status info for the <see cref="GameDataAPI"/>
         /// </summary>
         public static ApiStatusInfo GameData { get; internal set; } = new();
@@ -53,6 +58,11 @@ namespace GTFO.API.Resources
         /// Status info for the <see cref="PrefabAPI"/>
         /// </summary>
         public static ApiStatusInfo Prefab { get; internal set; } = new();
+
+        /// <summary>
+        /// Status info for the <see cref="SoundBankAPI"/>
+        /// </summary>
+        public static ApiStatusInfo SoundBank { get; internal set; } = new();
 
         internal static GameObject ScriptHolder
         {

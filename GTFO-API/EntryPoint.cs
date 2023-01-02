@@ -28,7 +28,9 @@ namespace GTFO.API
             m_Harmony = new Harmony("dev.gtfomodding.gtfo-api");
             m_Harmony.PatchAll();
 
+            EventAPI.Setup();
             AssetAPI.Setup();
+            SoundBankAPI.Setup();
             LevelAPI.Setup();
 
             APILogger.Verbose("Core", "Plugin Load Complete");

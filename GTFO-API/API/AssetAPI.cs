@@ -151,7 +151,7 @@ namespace GTFO.API
         {
             if (ContainsAsset(copyName)) throw new ArgumentException($"The asset you're trying to copy into is already registered", nameof(copyName));
             RegisterAsset(
-                copyName, 
+                copyName,
                 UnityEngine.Object.Instantiate(
                     GetLoadedAsset(assetName) ?? throw new ArgumentException($"Couldn't find an asset with the name '{assetName}'", nameof(assetName))
                 )
@@ -200,19 +200,37 @@ namespace GTFO.API
 
         internal static void Setup()
         {
-            AssetShardManager.add_OnStartupAssetsLoaded((Action)OnAssetsLoaded);
-
+            EventAPI.OnAssetsLoaded += OnAssetsLoaded;
             OnImplReady += LoadAssetBundles;
         }
 
         private static void LoadAssetBundles()
         {
-            string assetBundlesDir = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
+            string assetBundleDir = Path.Combine(Paths.BepInExRootPath, "Assets", "AssetBundles");
+            string assetBundlesDirOld = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
+            bool anyLoaded = LoadAssetBundles(assetBundleDir);
+            anyLoaded |= LoadAssetBundles(assetBundlesDirOld, outdated: true);
+            if (anyLoaded)
+                OnAssetBundlesLoaded?.Invoke();
+        }
+
+        private static bool LoadAssetBundles(string assetBundlesDir, bool outdated = false)
+        {
+            if (outdated)
+            {
+                if (Directory.Exists(assetBundlesDir))
+                    APILogger.Warn(nameof(AssetAPI), "Storing asset bundles in the config path is deprecated and will be removed in a future version of GTFO-API. The path has been moved to 'BepInEx\\Assets\\AssetBundles'.");
+                else return false;
+            }
+
             if (!Directory.Exists(assetBundlesDir))
+            {
                 Directory.CreateDirectory(assetBundlesDir);
+                return false;
+            }
 
             string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
-            if (bundlePaths.Length == 0) return;
+            if (bundlePaths.Length == 0) return false;
 
             for (int i = 0; i < bundlePaths.Length; i++)
             {
@@ -220,12 +238,13 @@ namespace GTFO.API
                 {
                     LoadAndRegisterAssetBundle(bundlePaths[i]);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     APILogger.Warn(nameof(AssetAPI), $"Failed to load asset bundle '{bundlePaths[i]}' ({ex.Message})");
                 }
             }
-            OnAssetBundlesLoaded?.Invoke();
+
+            return true;
         }
 
         internal static ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();
