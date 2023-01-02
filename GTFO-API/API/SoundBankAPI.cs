@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using BepInEx;
-using Globals;
 using GTFO.API.Attributes;
 using GTFO.API.Resources;
 
@@ -29,55 +29,34 @@ namespace GTFO.API
 
         private static void OnLoadSoundBanks()
         {
-            string path = Path.Combine(Paths.BepInExRootPath, "assets", "SoundBank");
+            string path = Path.Combine(Paths.BepInExRootPath, "Assets", "SoundBank");
             Directory.CreateDirectory(path)
                 .EnumerateFiles()
                 .Where(file => file.Extension.Contains(".bnk"))
                 .ToList()
-                .ForEach(file => LoadBank(file));
+                .ForEach(LoadBank);
             //Loaded those bad boys
             OnSoundBanksLoaded?.Invoke();
         }
 
-        private static void LoadBank(FileInfo file)
+        private static unsafe void LoadBank(FileInfo file)
         {
-            FileStream stream = file.OpenRead();
-            int length = (int)stream.Length;
+            using FileStream stream = file.OpenRead();
+            uint length = (uint)stream.Length;
             byte[] buffer = new byte[length];
-            if (stream.Read(buffer, 0, length).Equals(0)) return;
-            try
-            {
-                var size = (uint)buffer.Length;
-                var handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                var ptr = handle.AddrOfPinnedObject();
+            if (stream.Read(buffer, 0, (int)length) == 0) return;
 
-                if ((ptr.ToInt64() & 15L) != 0L)
-                {
-                    byte[] array = new byte[(long)buffer.Length + 16L];
-                    IntPtr newPtr = GCHandle.Alloc(array, GCHandleType.Pinned).AddrOfPinnedObject();
-                    int offset = 0;
-                    if ((newPtr.ToInt64() & 15L) != 0L)
-                    {
-                        long realignedPointerLoc = (newPtr.ToInt64() + 15L) & -16L;
-                        offset = (int)(realignedPointerLoc - newPtr.ToInt64());
-                        newPtr = new IntPtr(realignedPointerLoc);
-                    }
-                    Array.Copy(buffer, 0, array, offset, buffer.Length);
-                    ptr = newPtr;
-                    handle.Free();
-                }
+            void* nativeBank = NativeMemory.AlignedAlloc(length, 0x10);
+            Unsafe.CopyBlock(ref Unsafe.AsRef<byte>(nativeBank), ref buffer[0], length);
 
-                if (AkSoundEngine.LoadBank(ptr, size, out uint bankId).Equals(AKRESULT.AK_Success))
-                {
-                    APILogger.Info(nameof(SoundBankAPI), $"loaded : {file.Name}, {bankId}");
-                }
-            }
-            catch (Exception exception)
+            AKRESULT loadResult = AkSoundEngine.LoadBank((nint)nativeBank, length, out uint bankId);
+            if (loadResult == AKRESULT.AK_Success)
             {
-                APILogger.Debug(nameof(SoundBankAPI), exception);
-                APILogger.Warn(nameof(SoundBankAPI), $"exception thrown when allocating bnk : {file.Name}");
+                APILogger.Info(nameof(SoundBankAPI), $"Loaded sound bank '{file.Name}' (bankId: {bankId:X2})");
+            } else
+            {
+                APILogger.Error(nameof(SoundBankAPI), $"Error while loading sound bank '{file.Name}' ({loadResult})");
             }
-            stream.Dispose();
         }
     }
 }
