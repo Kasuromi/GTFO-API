@@ -206,10 +206,10 @@ namespace GTFO.API
 
         private static void LoadAssetBundles()
         {
-            string assetBundleDir = Path.Combine(Paths.BepInExRootPath, "assets", "AssetBundles");
+            string assetBundleDir = Path.Combine(Paths.BepInExRootPath, "Assets", "AssetBundles");
             string assetBundlesDirOld = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
             LoadAssetBundles(assetBundleDir);
-            LoadAssetBundles(assetBundlesDirOld, outdated: true); //oh the agony
+            LoadAssetBundles(assetBundlesDirOld, outdated: true);
             OnAssetBundlesLoaded?.Invoke();
         }
 
@@ -225,7 +225,7 @@ namespace GTFO.API
             if (!Directory.Exists(assetBundlesDir))
             {
                 Directory.CreateDirectory(assetBundlesDir);
-                return; //we're done here yeah?
+                return;
             }
 
             string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
