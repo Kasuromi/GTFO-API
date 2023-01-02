@@ -12,7 +12,7 @@ namespace GTFO.API.Patches
     [HarmonyPatch(typeof(GearManager))]
     internal static class GearManager_Patches
     {
-        private static string FavoritesDirectory => Path.Combine(Paths.ConfigPath, "Favorites");
+        private static string FavoritesDirectory => Path.Combine(Paths.BepInExRootPath, "GameData", "Favorites");
         private static string FavoritePath => Path.Combine(FavoritesDirectory, "Gear.json");
         private static string BotFavoritePath => Path.Combine(FavoritesDirectory, "BotGear.json");
 
