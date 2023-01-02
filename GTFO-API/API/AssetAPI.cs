@@ -208,28 +208,29 @@ namespace GTFO.API
         {
             string assetBundleDir = Path.Combine(Paths.BepInExRootPath, "Assets", "AssetBundles");
             string assetBundlesDirOld = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
-            LoadAssetBundles(assetBundleDir);
-            LoadAssetBundles(assetBundlesDirOld, outdated: true);
-            OnAssetBundlesLoaded?.Invoke();
+            bool anyLoaded = LoadAssetBundles(assetBundleDir);
+            anyLoaded |= LoadAssetBundles(assetBundlesDirOld, outdated: true);
+            if (anyLoaded)
+                OnAssetBundlesLoaded?.Invoke();
         }
 
-        private static void LoadAssetBundles(string assetBundlesDir, bool outdated = false)
+        private static bool LoadAssetBundles(string assetBundlesDir, bool outdated = false)
         {
             if (outdated)
             {
                 if (Directory.Exists(assetBundlesDir))
                     APILogger.Warn(nameof(AssetAPI), "Storing asset bundles in the config path is deprecated and will be removed in a future version of GTFO-API. The path has been moved to 'BepInEx\\Assets\\AssetBundles'.");
-                else return;
+                else return false;
             }
 
             if (!Directory.Exists(assetBundlesDir))
             {
                 Directory.CreateDirectory(assetBundlesDir);
-                return;
+                return false;
             }
 
             string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
-            if (bundlePaths.Length == 0) return;
+            if (bundlePaths.Length == 0) return false;
 
             for (int i = 0; i < bundlePaths.Length; i++)
             {
@@ -242,6 +243,8 @@ namespace GTFO.API
                     APILogger.Warn(nameof(AssetAPI), $"Failed to load asset bundle '{bundlePaths[i]}' ({ex.Message})");
                 }
             }
+
+            return true;
         }
 
         internal static ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();

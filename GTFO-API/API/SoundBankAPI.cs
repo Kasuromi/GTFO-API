@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using BepInEx;
 using GTFO.API.Attributes;
 using GTFO.API.Resources;
+using HarmonyLib;
 
 namespace GTFO.API
 {
@@ -18,7 +19,7 @@ namespace GTFO.API
         public static ApiStatusInfo Status => APIStatus.SoundBank;
 
         /// <summary>
-        /// Invoked when all external soundbanks have been loaded
+        /// Invoked when all external soundbanks have been loaded (Not invoked if no soundbanks)
         /// </summary>
         public static event Action OnSoundBanksLoaded;
 
@@ -30,13 +31,15 @@ namespace GTFO.API
         private static void OnLoadSoundBanks()
         {
             string path = Path.Combine(Paths.BepInExRootPath, "Assets", "SoundBank");
-            Directory.CreateDirectory(path)
+            FileInfo[] soundbanksToLoad = Directory.CreateDirectory(path)
                 .EnumerateFiles()
                 .Where(file => file.Extension.Contains(".bnk"))
-                .ToList()
-                .ForEach(LoadBank);
-            //Loaded those bad boys
-            OnSoundBanksLoaded?.Invoke();
+                .ToArray();
+
+            soundbanksToLoad.Do(LoadBank);
+
+            if (soundbanksToLoad.Any())
+                OnSoundBanksLoaded?.Invoke();
         }
 
         private static unsafe void LoadBank(FileInfo file)
@@ -53,7 +56,8 @@ namespace GTFO.API
             if (loadResult == AKRESULT.AK_Success)
             {
                 APILogger.Info(nameof(SoundBankAPI), $"Loaded sound bank '{file.Name}' (bankId: {bankId:X2})");
-            } else
+            }
+            else
             {
                 APILogger.Error(nameof(SoundBankAPI), $"Error while loading sound bank '{file.Name}' ({loadResult})");
             }
