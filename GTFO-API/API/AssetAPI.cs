@@ -151,7 +151,7 @@ namespace GTFO.API
         {
             if (ContainsAsset(copyName)) throw new ArgumentException($"The asset you're trying to copy into is already registered", nameof(copyName));
             RegisterAsset(
-                copyName, 
+                copyName,
                 UnityEngine.Object.Instantiate(
                     GetLoadedAsset(assetName) ?? throw new ArgumentException($"Couldn't find an asset with the name '{assetName}'", nameof(assetName))
                 )
@@ -215,16 +215,18 @@ namespace GTFO.API
 
         private static void LoadAssetBundles(string assetBundlesDir, bool outdated = false)
         {
+            if (outdated)
+            {
+                if (Directory.Exists(assetBundlesDir))
+                    APILogger.Warn(nameof(AssetAPI), "Storing asset bundles in the config path is deprecated and will be removed in a future version of GTFO-API. The path has been moved to 'BepInEx\\Assets\\AssetBundles'.");
+                else return;
+            }
+
             if (!Directory.Exists(assetBundlesDir))
             {
                 Directory.CreateDirectory(assetBundlesDir);
                 return; //we're done here yeah?
             }
-            else if (outdated)
-            {
-                APILogger.Warn(nameof(AssetAPI), "Storing asset bundles in the config path is deprecated and will be removed in a future version of GTFO-API. The path has been moved to 'BepInEx\\Assets\\AssetBundles'.");
-            }
-                
 
             string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
             if (bundlePaths.Length == 0) return;
