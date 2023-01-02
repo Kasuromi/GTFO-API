@@ -26,12 +26,9 @@
         <Reference Include="$(BIELibsFolder)\Il2CppInterop.*.dll" Private="false" />
         <Reference Include="$(BIELibsFolder)\SemanticVersioning.dll" Private="false" />
 
-        <!-- CoreCLR -->
-        <Reference Include="$(CorLibsFolder)\*.dll" Private="false" />
-
         <!-- Interop -->
-        <Reference Include="$(InteropLibsFolder)/*.dll" Private="false" />
-        <Reference Remove="$(InteropLibsFolder)/netstandard.dll" />
-        <Reference Remove="$(InteropLibsFolder)/Newtonsoft.Json.dll" />
+        <Reference Include="$(InteropLibsFolder)\*.dll" Private="false" />
+        <Reference Remove="$(InteropLibsFolder)\netstandard.dll" />
+
     </ItemGroup>
 </Project>
