@@ -200,16 +200,31 @@ namespace GTFO.API
 
         internal static void Setup()
         {
-            AssetShardManager.add_OnStartupAssetsLoaded((Action)OnAssetsLoaded);
-
+            EventAPI.OnAssetsLoaded += OnAssetsLoaded;
             OnImplReady += LoadAssetBundles;
         }
 
         private static void LoadAssetBundles()
         {
-            string assetBundlesDir = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
+            string assetBundleDir = Path.Combine(Paths.BepInExRootPath, "assets", "AssetBundles");
+            string assetBundlesDirOld = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
+            LoadAssetBundles(assetBundleDir);
+            LoadAssetBundles(assetBundlesDirOld, outdated: true); //oh the agony
+            OnAssetBundlesLoaded?.Invoke();
+        }
+
+        private static void LoadAssetBundles(string assetBundlesDir, bool outdated = false)
+        {
             if (!Directory.Exists(assetBundlesDir))
+            {
                 Directory.CreateDirectory(assetBundlesDir);
+                return; //we're done here yeah?
+            }
+            else if (outdated)
+            {
+                APILogger.Warn(nameof(AssetAPI), "Storing asset bundles in the config path is deprecated and will be removed in a future version of GTFO-API. The path has been moved to 'BepInEx\\Assets\\AssetBundles'.");
+            }
+                
 
             string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
             if (bundlePaths.Length == 0) return;
@@ -220,12 +235,11 @@ namespace GTFO.API
                 {
                     LoadAndRegisterAssetBundle(bundlePaths[i]);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     APILogger.Warn(nameof(AssetAPI), $"Failed to load asset bundle '{bundlePaths[i]}' ({ex.Message})");
                 }
             }
-            OnAssetBundlesLoaded?.Invoke();
         }
 
         internal static ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();
