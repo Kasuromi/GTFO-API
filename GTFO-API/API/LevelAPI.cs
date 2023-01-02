@@ -41,7 +41,7 @@ namespace GTFO.API
             Status.Created = true;
             Status.Ready = true;
 
-            RundownManager.add_OnExpeditionGameplayStarted((Action)EnterLevel);
+            EventAPI.OnExpeditionStarted += EnterLevel;
 
 #if DEBUG
             OnLevelDataUpdated += (activeExp, expData) => APILogger.Debug(nameof(LevelAPI), $"OnLevelDataUpdated Invoked");
