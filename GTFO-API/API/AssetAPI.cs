@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using AssetShards;
 using BepInEx;
 using GTFO.API.Attributes;
@@ -229,7 +230,10 @@ namespace GTFO.API
                 return false;
             }
 
-            string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories);
+            string[] bundlePaths = Directory.GetFiles(assetBundlesDir, "*", SearchOption.AllDirectories)
+                .Where(x => !x.EndsWith(".manifest", StringComparison.InvariantCultureIgnoreCase))
+                .ToArray();
+
             if (bundlePaths.Length == 0) return false;
 
             for (int i = 0; i < bundlePaths.Length; i++)
