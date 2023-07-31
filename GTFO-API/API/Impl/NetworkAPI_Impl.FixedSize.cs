@@ -31,7 +31,7 @@ namespace GTFO.API.Impl
                 OnReceive = onReceive,
                 EventType = typeof(T),
                 EventTypeSize = Marshal.SizeOf<T>(),
-                EventNameBytes = Encoding.UTF8.GetBytes(eventName)
+                Header = MakeHeaderBytes(eventName)
             };
 
             m_Events.Add(eventName, eventInfo);
@@ -55,35 +55,23 @@ namespace GTFO.API.Impl
                 throw new ArgumentException($"Payload type was incorrect! expecting: {typeof(T).FullName}", nameof(eventName));
             }
 
-            byte[] eventNameBytes = info.EventNameBytes;
-            int size = 2 + NetworkConstants.MagicSize + 8 + 2 + eventNameBytes.Length + info.EventTypeSize;
-            IntPtr pPacketBase = Marshal.AllocHGlobal(size);
+            int payloadSize = info.EventTypeSize;
+            int headerSize = info.HeaderSize;
+            int packetSize = headerSize + payloadSize;
 
+            IntPtr pPacketBase = Marshal.AllocHGlobal(packetSize);
             IntPtr pPacket = pPacketBase;
 
-            Marshal.WriteInt16(pPacket, (short)m_ReplicatorKey);
-            pPacket += 2;
-
-            Marshal.Copy(s_MagicBytes, 0, pPacket, NetworkConstants.MagicSize);
-            pPacket += NetworkConstants.MagicSize;
-
-            Marshal.WriteInt64(pPacket, (long)m_Signature);
-            pPacket += 8;
-
-            Marshal.WriteInt16(pPacket, (short)eventNameBytes.Length);
-            pPacket += 2;
-
-            Marshal.Copy(eventNameBytes, 0, pPacket, eventNameBytes.Length);
-            pPacket += eventNameBytes.Length;
+            Marshal.Copy(info.Header, 0, pPacket, headerSize);
+            pPacket += headerSize;
 
             Marshal.StructureToPtr(payload, pPacket, true);
 
-            byte[] packetBytes = new byte[size];
-            Marshal.Copy(pPacketBase, packetBytes, 0, size);
-
+            byte[] packetBytes = new byte[packetSize];
+            Marshal.Copy(pPacketBase, packetBytes, 0, packetSize);
             Marshal.FreeHGlobal(pPacketBase);
 
-            XORPacket(ref packetBytes, m_Signature, 2 + NetworkConstants.MagicSize + 8 + 2 + eventNameBytes.Length);
+            XORPacket(ref packetBytes, m_Signature, headerSize);
             return packetBytes;
         }
     }

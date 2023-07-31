@@ -12,7 +12,7 @@ namespace GTFO.API.Impl
         public Action<ulong, byte[]> OnReceive { get; set; }
         public Type EventType => null;
         public int EventTypeSize => INetworkingEventInfo.FreeByteSize;
-        public byte[] EventNameBytes { get; set; }
+        public byte[] Header { get; set; }
 
         public void InvokeOnReceive(ulong sender, object payload)
         {

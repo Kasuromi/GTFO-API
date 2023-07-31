@@ -11,7 +11,8 @@ namespace GTFO.API.Impl
         string Name { get; }
         Type EventType { get; }
         int EventTypeSize { get; }
-        byte[] EventNameBytes { get; }
+        byte[] Header { get; }
+        public int HeaderSize => Header.Length;
         void InvokeOnReceive(ulong sender, object payload);
 
         public bool IsFreeSized()

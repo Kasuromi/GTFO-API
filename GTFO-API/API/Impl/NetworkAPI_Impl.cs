@@ -92,6 +92,37 @@ namespace GTFO.API.Impl
         }
 
         [HideFromIl2Cpp]
+        private byte[] MakeHeaderBytes(string eventName)
+        {
+            byte[] nameBytes = Encoding.UTF8.GetBytes(eventName);
+            int nameBytesLength = nameBytes.Length;
+
+            int headerSize = 2 + NetworkConstants.MagicSize + 8 + 2 + nameBytesLength;
+            IntPtr pPacketBase = Marshal.AllocHGlobal(headerSize);
+            IntPtr pPacket = pPacketBase;
+
+            Marshal.WriteInt16(pPacket, (short)m_ReplicatorKey);
+            pPacket += 2;
+
+            Marshal.Copy(s_MagicBytes, 0, pPacket, NetworkConstants.MagicSize);
+            pPacket += NetworkConstants.MagicSize;
+
+            Marshal.WriteInt64(pPacket, (long)m_Signature);
+            pPacket += 8;
+
+            Marshal.WriteInt16(pPacket, (short)nameBytesLength);
+            pPacket += 2;
+
+            Marshal.Copy(nameBytes, 0, pPacket, nameBytesLength);
+
+            byte[] headerBytes = new byte[headerSize];
+            Marshal.Copy(pPacketBase, headerBytes, 0, headerSize);
+            Marshal.FreeHGlobal(pPacketBase);
+
+            return headerBytes;
+        }
+
+        [HideFromIl2Cpp]
         public bool EventExists(string eventName) => m_Events.ContainsKey(eventName);
 
         public ulong m_Signature = NetworkConstants.VersionSignature;
