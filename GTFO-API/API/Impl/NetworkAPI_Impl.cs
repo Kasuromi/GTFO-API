@@ -9,33 +9,7 @@ using UnityEngine;
 
 namespace GTFO.API.Impl
 {
-    internal interface INetworkingEventInfo
-    {
-        string Name { get; }
-        Type EventType { get; }
-        int EventTypeSize { get; }
-        byte[] EventNameBytes { get; }
-        void InvokeOnReceive(ulong sender, object payload);
-    }
-
-    internal class NetworkingEventInfo<T> : INetworkingEventInfo where T : struct
-    {
-        public string Name { get; set; }
-        public Action<ulong, T> OnReceive { get; set; }
-        public Type EventType { get; set; }
-        public int EventTypeSize { get; set; }
-        public byte[] EventNameBytes { get; set; }
-
-        public void InvokeOnReceive(ulong sender, object payload)
-        {
-            if (payload is T castedPayload)
-            {
-                OnReceive?.Invoke(sender, castedPayload);
-            }
-        }
-    }
-
-    internal class NetworkAPI_Impl : MonoBehaviour
+    internal sealed partial class NetworkAPI_Impl : MonoBehaviour
     {
         public NetworkAPI_Impl(IntPtr intPtr) : base(intPtr) { }
 
@@ -58,8 +32,16 @@ namespace GTFO.API.Impl
             APIStatus.Network.Ready = true;
             foreach (var cachedEvent in NetworkAPI.s_EventCache)
             {
-                MethodInfo registerMethod = typeof(NetworkAPI_Impl).GetMethod("RegisterEvent").MakeGenericMethod(cachedEvent.Value.Type);
-                registerMethod.Invoke(this, new object[] { cachedEvent.Key, cachedEvent.Value.OnReceive });
+                if (cachedEvent.Value.IsFreeSize)
+                {
+                    MethodInfo registerMethod = typeof(NetworkAPI_Impl).GetMethod("RegisterFreeSizedEvent");
+                    registerMethod.Invoke(this, new object[] { cachedEvent.Key, cachedEvent.Value.OnReceive });
+                }
+                else
+                {
+                    MethodInfo registerMethod = typeof(NetworkAPI_Impl).GetMethod("RegisterEvent").MakeGenericMethod(cachedEvent.Value.PayloadType);
+                    registerMethod.Invoke(this, new object[] { cachedEvent.Key, cachedEvent.Value.OnReceive });
+                }
             }
             NetworkAPI.s_EventCache.Clear();
         }
@@ -84,96 +66,36 @@ namespace GTFO.API.Impl
         public void HandlePacket(string eventName, ulong senderId, byte[] packetData, int startIndex = 0)
         {
             INetworkingEventInfo eventInfo = m_Events[eventName];
-            Type eventType = eventInfo.EventType;
 
-            XORPacket(ref packetData, m_Signature, startIndex);
-
-            int size = Marshal.SizeOf(eventType);
-            IntPtr pPacket = Marshal.AllocHGlobal(size);
-            Marshal.Copy(packetData, startIndex, pPacket, size);
-
-            object managedPacket = Marshal.PtrToStructure(pPacket, eventType);
-
-            Marshal.FreeHGlobal(pPacket);
-
-            eventInfo.InvokeOnReceive(senderId, managedPacket);
-        }
-
-        [HideFromIl2Cpp]
-        public void RegisterEvent<T>(string eventName, Action<ulong, T> onReceive) where T : struct
-        {
-            if (EventExists(eventName))
+            //Free Size Packet
+            if (eventInfo.IsFreeSized()) 
             {
-                throw new ArgumentException($"Type {typeof(T)} is a generic and cannot be registered.", nameof(eventName));
+                XORPacket(ref packetData, m_Signature, startIndex);
+                eventInfo.InvokeOnReceive(senderId, packetData);
             }
-
-            if (typeof(T).IsGenericType)
+            else
             {
-                throw new ArgumentException($"Generic type is not allowed to register", nameof(T));
+                Type eventType = eventInfo.EventType;
+
+                XORPacket(ref packetData, m_Signature, startIndex);
+
+                int size = Marshal.SizeOf(eventType);
+                IntPtr pPacket = Marshal.AllocHGlobal(size);
+                Marshal.Copy(packetData, startIndex, pPacket, size);
+
+                object managedPacket = Marshal.PtrToStructure(pPacket, eventType);
+
+                Marshal.FreeHGlobal(pPacket);
+
+                eventInfo.InvokeOnReceive(senderId, managedPacket);
             }
-
-            NetworkingEventInfo<T> eventInfo = new()
-            {
-                Name = eventName,
-                OnReceive = onReceive,
-                EventType = typeof(T),
-                EventTypeSize = Marshal.SizeOf<T>(),
-                EventNameBytes = Encoding.UTF8.GetBytes(eventName)
-            };
-
-            m_Events.Add(eventName, eventInfo);
         }
 
         [HideFromIl2Cpp]
         public bool EventExists(string eventName) => m_Events.ContainsKey(eventName);
 
-        [HideFromIl2Cpp]
-        public byte[] MakePacketBytes<T>(string eventName, T payload) where T : struct
-        {
-            if (!m_Events.TryGetValue(eventName, out INetworkingEventInfo info))
-            {
-                throw new ArgumentException($"An event with the name {eventName} was not registered.", nameof(eventName));
-            }
-
-            if (info.EventType != typeof(T))
-            {
-                throw new ArgumentException($"Payload type was incorrect! expecting: {typeof(T).FullName}", nameof(eventName));
-            }
-
-            byte[] eventNameBytes = info.EventNameBytes;
-            int size = 2 + NetworkConstants.MagicSize + 8 + 2 + eventNameBytes.Length + info.EventTypeSize;
-            IntPtr pPacketBase = Marshal.AllocHGlobal(size);
-
-            IntPtr pPacket = pPacketBase;
-
-            Marshal.WriteInt16(pPacket, (short)m_ReplicatorKey);
-            pPacket += 2;
-
-            Marshal.Copy(s_MagicBytes, 0, pPacket, NetworkConstants.MagicSize);
-            pPacket += NetworkConstants.MagicSize;
-
-            Marshal.WriteInt64(pPacket, (long)m_Signature);
-            pPacket += 8;
-
-            Marshal.WriteInt16(pPacket, (short)eventNameBytes.Length);
-            pPacket += 2;
-
-            Marshal.Copy(eventNameBytes, 0, pPacket, eventNameBytes.Length);
-            pPacket += eventNameBytes.Length;
-
-            Marshal.StructureToPtr(payload, pPacket, true);
-
-            byte[] packetBytes = new byte[size];
-            Marshal.Copy(pPacketBase, packetBytes, 0, size);
-
-            Marshal.FreeHGlobal(pPacketBase);
-
-            XORPacket(ref packetBytes, m_Signature, 2 + NetworkConstants.MagicSize + 8 + 2 + eventNameBytes.Length);
-            return packetBytes;
-        }
-
-        public ushort m_ReplicatorKey = 0xFFFD;
         public ulong m_Signature = NetworkConstants.VersionSignature;
+        public ushort m_ReplicatorKey = 0xFFFD;
 
         private readonly Dictionary<string, INetworkingEventInfo> m_Events = new();
 
