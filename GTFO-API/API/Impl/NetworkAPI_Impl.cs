@@ -70,8 +70,13 @@ namespace GTFO.API.Impl
             //Free Size Packet
             if (eventInfo.IsFreeSized()) 
             {
+                int payloadSize = packetData.Length - eventInfo.HeaderSize;
                 XORPacket(ref packetData, m_Signature, startIndex);
-                eventInfo.InvokeOnReceive(senderId, packetData);
+
+                byte[] payloadBytes = new byte[payloadSize];
+                Array.Copy(packetData, startIndex, payloadBytes, 0, payloadSize);
+
+                eventInfo.InvokeOnReceive(senderId, payloadBytes);
             }
             else
             {
