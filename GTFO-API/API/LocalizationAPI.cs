@@ -59,6 +59,16 @@ public static class LocalizationAPI
         Status.Ready = true;
     }
 
+    internal static void LanguageChanged()
+    {
+        OnLanguageChange?.Invoke();
+    }
+
+    /// <summary>
+    /// An event called when the game's current language is changed.
+    /// </summary>
+    public static event Action? OnLanguageChange;
+
     /// <summary>
     /// Gets the current language GTFO is using.
     /// </summary>
