@@ -151,6 +151,65 @@ public static class LocalizationAPI
     }
 
     /// <summary>
+    /// Manually adds a localization entry.
+    /// </summary>
+    /// <param name="key">
+    /// The localization key.
+    /// </param>
+    /// <param name="language">
+    /// The language of the value.
+    /// </param>
+    /// <param name="value">
+    /// The value for the localization key <paramref name="key"/>.
+    /// </param>
+    /// <param name="generateTextDataBlock">
+    /// Whether or not to generate text data block for the localization entry.
+    /// </param>
+    /// <remarks>
+    /// This method will not override existing values!
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="key"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="key"/> is empty/whitespace, or <paramref name="language"/>
+    /// isn't a valid language.
+    /// </exception>
+    public static void AddEntry(string key, Language language, string value, bool generateTextDataBlock = false)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("Key may not be empty or whitespace", nameof(key));
+        }
+
+        value ??= string.Empty;
+
+        if (language < Language.English || language > Language.Chinese_Simplified)
+        {
+            throw new ArgumentException($"Invalid language '{language}'", nameof(language));
+        }
+
+        ref LocalizationEntry? entry = ref CollectionsMarshal.GetValueRefOrAddDefault(s_Entries, key, out bool existing);
+
+        entry ??= new LocalizationEntry();
+        entry.AddValue(language, value);
+
+        //? optimization: there might be a better ordering of
+        //?               the parameters.
+        if (generateTextDataBlock && !existing)
+        {
+            // add anyways, as all entries will have
+            // their datablock generated again when reloading
+            s_EntriesToGenerateTextDBs.Add(key);
+            if (s_GameDataInitialized)
+            {
+                entry.GenerateTextDataBlock(key);
+            }
+        }
+    }
+
+    /// <summary>
     /// Loads localizations from the calling assembly's resources. 
     /// </summary>
     /// <param name="baseName">
