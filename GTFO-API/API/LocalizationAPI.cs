@@ -62,13 +62,7 @@ public static class LocalizationAPI
     /// Gets the current language GTFO is using.
     /// </summary>
     public static Language CurrentLanguage
-    {
-        get
-        {
-            //? There might be a better way to get this.
-            return (Language)CellSettingsManager.SettingsData.Accessibility.Language.Value;
-        }
-    }
+        => Text.TextLocalizationService.CurrentLanguage;
 
     /// <summary>
     /// Get a localization string using the specified key for the current language,
@@ -332,7 +326,7 @@ public static class LocalizationAPI
             info = info.Parent;
             // an infinite loop occurs here with an empty culture info,
             // so this helps fix that.
-            if (info.Name.Length == 0)
+            if (string.IsNullOrEmpty(info.Name))
             {
                 return default;
             }
