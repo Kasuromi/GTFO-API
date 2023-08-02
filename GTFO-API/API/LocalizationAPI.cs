@@ -85,6 +85,8 @@ public static class LocalizationAPI
     /// </exception>
     public static string FormatString(string key, params object?[] args)
     {
+        ValidateLocalizationKey(key);
+
         if (!TryGetString(key, out string? value))
         {
             return key;
