@@ -34,9 +34,9 @@ public static class LocalizationAPI
     internal static void Setup()
     {
         GameDataAPI.OnGameDataInitialized += OnGameDataInitialized;
+        EventAPI.OnAssetsLoaded += OnGameAssetsLoaded;
 
         Status.Created = true;
-        Status.Ready = true;
     }
 
     internal static void OnGameDataInitialized()
@@ -50,6 +50,12 @@ public static class LocalizationAPI
             }
             localizationEntry.GenerateTextDataBlock(entry, force: true);
         }
+    }
+
+    internal static void OnGameAssetsLoaded()
+    {
+        // current language should be available now.
+        Status.Ready = true;
     }
 
     /// <summary>
