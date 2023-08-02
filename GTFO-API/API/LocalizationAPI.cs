@@ -10,6 +10,7 @@ using GameData;
 using GTFO.API.Attributes;
 using Localization;
 using GTFO.API.Resources;
+using System.Runtime.CompilerServices;
 
 #nullable enable
 namespace GTFO.API;
@@ -104,9 +105,12 @@ public static class LocalizationAPI
     /// <exception cref="ArgumentNullException">
     /// <paramref name="key"/> is <see langword="null"/>.
     /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="key"/> is empty/whitespace.
+    /// </exception>
     public static string GetString(string key)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        ValidateLocalizationKey(key);
 
         if (!TryGetString(key, out string? value))
         {
@@ -131,9 +135,12 @@ public static class LocalizationAPI
     /// <exception cref="ArgumentNullException">
     /// <paramref name="key"/> is <see langword="null"/>.
     /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="key"/> is empty/whitespace.
+    /// </exception>
     public static bool TryGetString(string key, [NotNullWhen(true)] out string? value)
     {
-        ArgumentNullException.ThrowIfNull(key);
+        ValidateLocalizationKey(key);
 
         if (!s_Entries.TryGetValue(key, out LocalizationEntry? entry))
         {
@@ -142,6 +149,103 @@ public static class LocalizationAPI
         }
 
         return entry.TryGetString(CurrentLanguage, out value);
+    }
+
+    /// <summary>
+    /// Whether or not this localization api has the given localization key
+    /// </summary>
+    /// <param name="key">
+    /// The localization key to test.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if a localization entry with key <paramref name="key"/>
+    /// was found; <see langword="false"/>, otherwise.
+    /// </returns>
+    public static bool HasKey([NotNullWhen(true)] string? key)
+    {
+        return !string.IsNullOrWhiteSpace(key) && s_Entries.ContainsKey(key);
+    }
+
+    /// <summary>
+    /// Generates a text data block for the specific localization key
+    /// if not done so already.
+    /// </summary>
+    /// <param name="key">
+    /// The localization entry key.
+    /// </param>
+    /// <param name="textDataBlockOptions">
+    /// The options for generating the text data block. If <see langword="null"/>,
+    /// this method will use the default text data block options.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="key"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="key"/> is empty/whitespace.
+    /// </exception>
+    /// <exception cref="KeyNotFoundException">
+    /// No such localization entry with key <paramref name="key"/>
+    /// exists.
+    /// </exception>
+    /// <returns>The text data block id for the key.</returns>
+    public static uint GenerateTextBlock(string key, TextDBOptions? textDataBlockOptions = null)
+    {
+        ValidateLocalizationKey(key);
+
+        // keynotfound exception passed up from s_Entries
+        LocalizationEntry entry = s_Entries[key];
+
+        if (entry.TextBlockId.HasValue)
+        {
+            return entry.TextBlockId.Value;
+        }
+
+        if (textDataBlockOptions.HasValue)
+        {
+            entry.GenerateTextDataBlock(key, textDataBlockOptions.Value);
+        }
+        else
+        {
+            entry.GenerateTextDataBlock(key);
+        }
+        s_EntriesToGenerateTextDBs.Add(key);
+
+        return entry.TextBlockId.Value;
+    }
+
+    /// <summary>
+    /// Attempts to get the text data block id of the given localization
+    /// key.
+    /// </summary>
+    /// <param name="key">
+    /// The localization key.
+    /// </param>
+    /// <param name="blockId">
+    /// The found datablock id, or <c>0</c> if not found.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="blockId"/> was found;
+    /// <see langword="false"/>, otherwise.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="key"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="key"/> is empty/whitespace.
+    /// </exception>
+    public static bool TryGetTextBlockId(string key, out uint blockId)
+    {
+        ValidateLocalizationKey(key);
+
+        if (!s_Entries.TryGetValue(key, out LocalizationEntry? entry) ||
+            !entry.TextBlockId.HasValue)
+        {
+            blockId = 0;
+            return false;
+        }
+
+        blockId = entry.TextBlockId.Value;
+        return true;
     }
 
     /// <summary>
@@ -156,8 +260,9 @@ public static class LocalizationAPI
     /// <param name="value">
     /// The value for the localization key <paramref name="key"/>.
     /// </param>
-    /// <param name="generateTextDataBlock">
-    /// Whether or not to generate text data block for the localization entry.
+    /// <param name="textDataBlockOptions">
+    /// The options for generating the text data block. If <see langword="null"/>,
+    /// this method wont generate text data blocks.
     /// </param>
     /// <remarks>
     /// This method will not override existing values!
@@ -169,20 +274,12 @@ public static class LocalizationAPI
     /// <paramref name="key"/> is empty/whitespace, or <paramref name="language"/>
     /// isn't a valid language.
     /// </exception>
-    public static void AddEntry(string key, Language language, string value, bool generateTextDataBlock = false)
+    public static void AddEntry(string key, Language language, string value, TextDBOptions? textDataBlockOptions = null)
     {
-        ArgumentNullException.ThrowIfNull(key);
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            throw new ArgumentException("Key may not be empty or whitespace", nameof(key));
-        }
+        ValidateLocalizationKey(key);
+        ValidateLanguage(language);
 
         value ??= string.Empty;
-
-        if (language < Language.English || language > Language.Chinese_Simplified)
-        {
-            throw new ArgumentException($"Invalid language '{language}'", nameof(language));
-        }
 
         ref LocalizationEntry? entry = ref CollectionsMarshal.GetValueRefOrAddDefault(s_Entries, key, out bool existing);
 
@@ -191,14 +288,14 @@ public static class LocalizationAPI
 
         //? optimization: there might be a better ordering of
         //?               the parameters.
-        if (generateTextDataBlock && !existing)
+        if (textDataBlockOptions.HasValue && !existing)
         {
             // add anyways, as all entries will have
             // their datablock generated again when reloading
             s_EntriesToGenerateTextDBs.Add(key);
             if (s_GameDataInitialized)
             {
-                entry.GenerateTextDataBlock(key);
+                entry.GenerateTextDataBlock(key, textDataBlockOptions.Value);
             }
         }
     }
@@ -215,15 +312,16 @@ public static class LocalizationAPI
     /// from the name.
     /// </para>
     /// </param>
-    /// <param name="generateTextDataBlocks">
-    /// Whether or not to generate text data blocks for each localization entry found.
+    /// <param name="textDataBlockOptions">
+    /// The options for generating the text data block. If <see langword="null"/>,
+    /// this method wont generate text data blocks.
     /// </param>
     /// <exception cref="AggregateException">
     /// Thrown if exceptions occur whilst loading a resource set. This will
     /// only be thrown after loading all possible resource sets.
     /// </exception>
-    public static void LoadFromResources(string baseName, bool generateTextDataBlocks = false)
-        => LoadFromResources(baseName, Assembly.GetCallingAssembly(), generateTextDataBlocks);
+    public static void LoadFromResources(string baseName, TextDBOptions? textDataBlockOptions = null)
+        => LoadFromResources(baseName, Assembly.GetCallingAssembly(), textDataBlockOptions);
 
     /// <summary>
     /// Loads localizations from the specified assembly's resources.
@@ -236,14 +334,15 @@ public static class LocalizationAPI
     /// <param name="assembly">
     /// The assembly's resources to use.
     /// </param>
-    /// <param name="generateTextDataBlocks">
-    /// Whether or not to generate text data blocks for each localization entry found.
+    /// <param name="textDataBlockOptions">
+    /// The options for generating the text data block. If <see langword="null"/>,
+    /// this method wont generate text data blocks.
     /// </param>
     /// <exception cref="AggregateException">
     /// Thrown if exceptions occur whilst loading a resource set. This will
     /// only be thrown after loading all possible resource sets.
     /// </exception>
-    public static void LoadFromResources(string baseName, Assembly assembly, bool generateTextDataBlocks = false)
+    public static void LoadFromResources(string baseName, Assembly assembly, TextDBOptions? textDataBlockOptions = null)
     {
         ResourceManager resourceManager = new(baseName, assembly);
 
@@ -298,14 +397,14 @@ public static class LocalizationAPI
 
                 //? optimization: there might be a better ordering of
                 //?               the parameters.
-                if (generateTextDataBlocks && !existing)
+                if (textDataBlockOptions.HasValue && !existing)
                 {
                     // add anyways, as all entries will have
                     // their datablock generated again when reloading
                     s_EntriesToGenerateTextDBs.Add(key);
                     if (s_GameDataInitialized)
                     {
-                        entry.GenerateTextDataBlock(key);
+                        entry.GenerateTextDataBlock(key, textDataBlockOptions.Value);
                     }
                 }
             }
@@ -316,6 +415,23 @@ public static class LocalizationAPI
         if (allExceptions.Count > 0)
         {
             throw new AggregateException(allExceptions);
+        }
+    }
+
+    private static void ValidateLocalizationKey([NotNull] string key, [CallerArgumentExpression(nameof(key))] string? paramName = null)
+    {
+        ArgumentNullException.ThrowIfNull(key, paramName);
+        if (string.IsNullOrWhiteSpace(paramName))
+        {
+            throw new ArgumentException("Localization key cannot be empty/whitespace", paramName ?? nameof(key));
+        }
+    }
+
+    private static void ValidateLanguage(Language language, [CallerArgumentExpression(nameof(language))] string? paramName = null)
+    {
+        if (language < Language.English || language > Language.Chinese_Simplified)
+        {
+            throw new ArgumentException($"'{language}' is not a valid language", paramName ?? nameof(language));
         }
     }
 
@@ -393,17 +509,95 @@ public static class LocalizationAPI
         }
     }
 
+    /// <summary>
+    /// Options for generating the text data block.
+    /// </summary>
+    public struct TextDBOptions
+    {
+        private Language? m_FallbackLanguage;
+        private uint? m_CharacterMetadataId;
+
+        /// <summary>
+        /// The <see cref="TextCharacterMetaDataBlock"/> Id to use
+        /// for the text data block. If not specified, defaults to <c>1</c>.
+        /// </summary>
+        public uint? CharacterMetadataId
+        {
+            readonly get => m_CharacterMetadataId;
+            set => m_CharacterMetadataId = value;
+        }
+
+        /// <summary>
+        /// The language to fallback to if a language in <see cref="TextDataBlock"/>
+        /// has no value. If <see langword="null"/>, will use the first found language
+        /// that has a value. If the fallback language has no value, then the
+        /// localization key itself will be used.
+        /// </summary>
+        /// <remarks>
+        /// To find the first language with a value, first <see cref="Language.English"/>
+        /// is used, then it's incremented by one until reaching
+        /// <see cref="Language.Chinese_Simplified"/>.
+        /// </remarks>
+        /// <exception cref="ArgumentException" accessor="set">
+        /// Attempting to set to an invalid language.
+        /// </exception>
+        public Language? FallbackLanguage
+        {
+            readonly get => m_FallbackLanguage;
+            set
+            {
+                if (!value.HasValue)
+                {
+                    m_FallbackLanguage = value;
+                    return;
+                }
+
+                Language language = value.Value;
+                if (language < Language.English || language > Language.Chinese_Simplified)
+                {
+                    throw new ArgumentException($"'{language}' isn't a valid language.", nameof(value));
+                }
+
+                m_FallbackLanguage = language;
+            }
+        }
+    }
+
     private sealed class LocalizationEntry
     {
         // length is the maximum value of a Language (right now is
         // Chinese_Simplified with a value of 12)
         private readonly string?[] m_ValuesByLanguage = new string[12];
 
+        // A local definition of the options for text data block generated.
+        // Used when gamedata re-initializes, as there would be no access
+        // to a TextDBOptions object.
+        private TextDBOptions m_Options;
+
         // the text datablock is not generated unless told
         // to manually do so on creation, or when specifically called up.
-        private uint? m_TextBlockId;
+        public uint? TextBlockId { get; private set; }
 
-        public string GetStringOrDefault(Language language, string defaultValue)
+        private string TryGetStringInLanguageOrDefault(Language language, string defaultValue)
+        {
+            return TryGetStringInLanguage(language) ?? defaultValue;
+        }
+
+        private string? TryGetStringInAnyLanguage()
+        {
+            for (int i = 0; i < m_ValuesByLanguage.Length; i++)
+            {
+                string? value = m_ValuesByLanguage[i];
+                if (value is not null)
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        private string? TryGetStringInLanguage(Language language, bool fromFallback = false)
         {
             int index = (int)language - 1;
             if (index < 0 || index >= m_ValuesByLanguage.Length)
@@ -411,7 +605,20 @@ public static class LocalizationAPI
                 throw new ArgumentOutOfRangeException(nameof(language));
             }
 
-            return m_ValuesByLanguage[index] ?? defaultValue;
+            string? value = m_ValuesByLanguage[index];
+            if (value is not null || fromFallback)
+            {
+                return value;
+            }
+
+            if (m_Options.FallbackLanguage.HasValue)
+            {
+                return TryGetStringInLanguage(m_Options.FallbackLanguage.Value, fromFallback: true);
+            }
+            else
+            {
+                return TryGetStringInAnyLanguage();
+            }
         }
 
         public bool TryGetString(Language language, [NotNullWhen(true)] out string? value)
@@ -427,32 +634,40 @@ public static class LocalizationAPI
             return value is not null;
         }
 
+        [MemberNotNull(nameof(TextBlockId))]
+        public void GenerateTextDataBlock(string key, TextDBOptions options, bool force = false)
+        {
+            m_Options = options;
+            GenerateTextDataBlock(key, force);
+        }
+
+        [MemberNotNull(nameof(TextBlockId))]
         public void GenerateTextDataBlock(string key, bool force = false)
         {
-            if (m_TextBlockId.HasValue && !force)
+            if (TextBlockId.HasValue && !force)
             {
                 return;
             }
 
             TextDataBlock block = new TextDataBlock()
             {
-                CharacterMetaData = 1,
+                CharacterMetaData = m_Options.CharacterMetadataId ?? 1U,
                 internalEnabled = true,
                 ExportVersion = 1,
                 ImportVersion = 1,
                 Description = string.Empty,
-                English = GetStringOrDefault(Language.English, key),
-                French = GetStringOrDefault(Language.French, key),
-                Italian = GetStringOrDefault(Language.Italian, key),
-                German = GetStringOrDefault(Language.German, key),
-                Spanish = GetStringOrDefault(Language.Spanish, key),
-                Russian = GetStringOrDefault(Language.Russian, key),
-                Portuguese_Brazil = GetStringOrDefault(Language.Portuguese_Brazil, key),
-                Polish = GetStringOrDefault(Language.Polish, key),
-                Japanese = GetStringOrDefault(Language.Japanese, key),
-                Korean = GetStringOrDefault(Language.Korean, key),
-                Chinese_Traditional = GetStringOrDefault(Language.Chinese_Traditional, key),
-                Chinese_Simplified = GetStringOrDefault(Language.Chinese_Simplified, key),
+                English = TryGetStringInLanguageOrDefault(Language.English, key),
+                French = TryGetStringInLanguageOrDefault(Language.French, key),
+                Italian = TryGetStringInLanguageOrDefault(Language.Italian, key),
+                German = TryGetStringInLanguageOrDefault(Language.German, key),
+                Spanish = TryGetStringInLanguageOrDefault(Language.Spanish, key),
+                Russian = TryGetStringInLanguageOrDefault(Language.Russian, key),
+                Portuguese_Brazil = TryGetStringInLanguageOrDefault(Language.Portuguese_Brazil, key),
+                Polish = TryGetStringInLanguageOrDefault(Language.Polish, key),
+                Japanese = TryGetStringInLanguageOrDefault(Language.Japanese, key),
+                Korean = TryGetStringInLanguageOrDefault(Language.Korean, key),
+                Chinese_Traditional = TryGetStringInLanguageOrDefault(Language.Chinese_Traditional, key),
+                Chinese_Simplified = TryGetStringInLanguageOrDefault(Language.Chinese_Simplified, key),
                 name = key,
                 MachineTranslation = false,
                 SkipLocalization = false,
@@ -462,7 +677,7 @@ public static class LocalizationAPI
 
             TextDataBlock.AddBlock(block);
 
-            m_TextBlockId = block.persistentID;
+            TextBlockId = block.persistentID;
         }
 
         public void AddValue(Language language, string value, bool force = false)
@@ -480,11 +695,11 @@ public static class LocalizationAPI
 
             current = value;
 
-            if (!m_TextBlockId.HasValue) return;
+            if (!TextBlockId.HasValue) return;
 
 
             // update text data block
-            TextDataBlock? block = TextDataBlock.GetBlock(m_TextBlockId.Value);
+            TextDataBlock? block = TextDataBlock.GetBlock(TextBlockId.Value);
             if (block == null) return;
 
             UpdateTextDataBlock(block, language, current);
