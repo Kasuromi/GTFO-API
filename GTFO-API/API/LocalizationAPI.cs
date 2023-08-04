@@ -384,6 +384,29 @@ public static partial class LocalizationAPI
     }
 
     /// <summary>
+    /// Whether or not this localization api has the given localization key,
+    /// and a value in the specified language.
+    /// </summary>
+    /// <param name="key">
+    /// The localization key to test.
+    /// </param>
+    /// <param name="language">
+    /// The localization language to test.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if a localization entry with key <paramref name="key"/>
+    /// was found, and a value in language <paramref name="language"/> was found;
+    /// <see langword="false"/>, otherwise.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="language"/> isn't a valid language.
+    /// </exception>
+    public static bool HasLocalizedValue([NotNullWhen(true)] string? key, Language language)
+    {
+        return !string.IsNullOrWhiteSpace(key) && s_Entries.TryGetValue(key, out Entry? entry) && entry.HasValueInLanguage(language);
+    }
+
+    /// <summary>
     /// Generates a text data block for the specific localization key
     /// if not done so already.
     /// </summary>

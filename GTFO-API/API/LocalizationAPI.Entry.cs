@@ -190,6 +190,13 @@ partial class LocalizationAPI
             return key;
         }
 
+        public bool HasValueInLanguage(Language language)
+        {
+            ValidateLanguage(language);
+
+            return m_ValuesByLanguage[((int)language - 1)] is not null;
+        }
+
         public void AddValue(Language language, string value, bool force = false)
         {
             ArgumentNullException.ThrowIfNull(value);
