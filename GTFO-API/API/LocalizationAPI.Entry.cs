@@ -129,7 +129,7 @@ partial class LocalizationAPI
                 MachineTranslation = false,
                 SkipLocalization = false,
                 // have GTFO autogenerate a valid persistent id
-                persistentID = 1
+                persistentID = 0
             };
 
             TextDataBlock.AddBlock(block);
