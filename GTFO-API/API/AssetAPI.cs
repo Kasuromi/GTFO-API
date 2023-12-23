@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using AssetShards;
 using BepInEx;
+using GTFO.API.API;
 using GTFO.API.Attributes;
 using GTFO.API.Impl;
 using GTFO.API.Resources;
@@ -20,7 +21,7 @@ namespace GTFO.API
         public static ApiStatusInfo Status => APIStatus.Asset;
 
         /// <summary>
-        /// Invoked when the game's startup assets have been fully loaded
+        /// Invoked when the base game's startup assets have been fully loaded
         /// </summary>
         public static event Action OnStartupAssetsLoaded;
 
@@ -30,9 +31,41 @@ namespace GTFO.API
         public static event Action OnAssetBundlesLoaded;
 
         /// <summary>
+        /// Invoken when loading custom assets are about to start
+        /// </summary>
+        public static event Action OnCustomAssetsLoading;
+
+        /// <summary>
+        /// Invoked when startup asset has fully loaded (Including custom bundles and base game assets)
+        /// </summary>
+        public static event Action OnStartupAssetsFullyLoaded;
+
+        /// <summary>
         /// Invoked when the internal handler is ready
         /// </summary>
         public static event Action OnImplReady;
+
+        /// <summary>
+        /// Return true If every assetbundle and startup assets are loaded
+        /// </summary>
+        public static bool IsReadyForStartup
+        {
+            get
+            {
+                if (!Status.Ready)
+                    return false;
+
+                if (s_LoadBlockerHandles.Any(x => !x.IsCompleted))
+                    return false;
+
+                if (!s_StartupAssetsFullyLoaded)
+                {
+                    s_StartupAssetsFullyLoaded = true;
+                    OnStartupAssetsFullyLoaded?.Invoke();
+                }
+                return true;
+            }
+        }
 
         /// <summary>
         /// Checks if an asset is already registered in the <see cref="AssetAPI"/>
@@ -188,6 +221,26 @@ namespace GTFO.API
             return clonedObj != null;
         }
 
+        /// <summary>
+        /// Create new Load Job Handle
+        /// </summary>
+        /// <param name="newLoadHandle">Created Load Job Handle</param>
+        /// <returns>true if handle has created, false if custom asset loading process is already done (after <see cref="AssetAPI.OnStartupAssetsFullyLoaded"/> has invoked)</returns>
+        public static bool WantToWorkForStartupAssets(out AssetLoadHandle newLoadHandle)
+        {
+            if (s_StartupAssetsFullyLoaded)
+            {
+                APILogger.Error($"Asset", "Startup Assets are already loaded! Try load them before ");
+                newLoadHandle = null;
+                return false;
+            }
+                
+
+            newLoadHandle = new();
+            s_LoadBlockerHandles.Add(newLoadHandle);
+            return true;
+        }
+
         private static void OnAssetsLoaded()
         {
             if (!APIStatus.Asset.Created)
@@ -199,20 +252,21 @@ namespace GTFO.API
 
         internal static void InvokeImplReady() => OnImplReady?.Invoke();
 
+        internal static void InvokeBundleLoaded() => OnAssetBundlesLoaded?.Invoke();
+
         internal static void Setup()
         {
             EventAPI.OnAssetsLoaded += OnAssetsLoaded;
-            OnImplReady += LoadAssetBundles;
+            OnImplReady += LoadCustomStartupAssets;
         }
 
-        private static void LoadAssetBundles()
+        private static void LoadCustomStartupAssets()
         {
+            OnCustomAssetsLoading?.Invoke();
             string assetBundleDir = Path.Combine(Paths.BepInExRootPath, "Assets", "AssetBundles");
             string assetBundlesDirOld = Path.Combine(Paths.ConfigPath, "Assets", "AssetBundles");
-            bool anyLoaded = LoadAssetBundles(assetBundleDir);
-            anyLoaded |= LoadAssetBundles(assetBundlesDirOld, outdated: true);
-            if (anyLoaded)
-                OnAssetBundlesLoaded?.Invoke();
+            LoadAssetBundles(assetBundleDir);
+            LoadAssetBundles(assetBundlesDirOld, outdated: true);
         }
 
         private static bool LoadAssetBundles(string assetBundlesDir, bool outdated = false)
@@ -238,19 +292,16 @@ namespace GTFO.API
 
             for (int i = 0; i < bundlePaths.Length; i++)
             {
-                try
-                {
-                    LoadAndRegisterAssetBundle(bundlePaths[i]);
-                }
-                catch (Exception ex)
-                {
-                    APILogger.Warn(nameof(AssetAPI), $"Failed to load asset bundle '{bundlePaths[i]}' ({ex.Message})");
-                }
+                WantToWorkForStartupAssets(out var assetLoadHandle);
+                AssetAPI_Impl.Instance.LoadAssetBundle(bundlePaths[i], assetLoadHandle);
             }
+            AssetAPI_Impl.Instance.DEBUG_BundleLoadingStarted(bundlePaths.Length);
 
             return true;
         }
 
-        internal static ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();
+        internal static readonly ConcurrentDictionary<string, UnityEngine.Object> s_RegistryCache = new();
+        internal static readonly ConcurrentBag<AssetLoadHandle> s_LoadBlockerHandles = new();
+        internal static bool s_StartupAssetsFullyLoaded = false;
     }
 }
